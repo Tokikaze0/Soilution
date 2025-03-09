@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% load static %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About - Soilution</title>
+    <!-- <link rel="icon" type="image/png" href="{% static 'images/smiley.png' %}" /> -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
+      rel="stylesheet"
+    />
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.0/dist/vanilla-tilt.min.js"></script> -->
+    <!-- <link rel="stylesheet" href="{% static 'css/about.css' %}" /> -->
+    <style>
+      @font-face {
+        font-family: "CustomFont";
+        src: url("{% static 'fonts/Boring-Sans.ttf' %}");
+        font-weight: bold;
+        font-style: normal;
+      }
+
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-image: url("{% static 'images/soil_image1.jpeg' %}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-position: top;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: -1;
+      }
+
+      .navbar {
+        position: absolute;
+        top: 0;
+        left: -0.2rem;
+        width: 100%;
+        margin: 0;
+        padding: 1rem 4rem;
+        background-color: transparent;
+        transition: background-color 0.3s ease-in-out;
+      }
+
+      .navbar-brand {
+        color: #fff !important;
+        font-size: 1.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+
+      .navbar-nav .nav-item .nav-link {
+        color: #fff !important;
+        padding: 0.8rem 1.2rem;
+        font-size: 1.1rem;
+        transition: color 0.3s ease, background-color 0.3s ease;
+      }
+
+      .navbar-nav .nav-item .nav-link:hover,
+      .navbar-nav .nav-item .nav-link.active {
+        color: #faba0c !important;
+        transition: background-color 0.3s ease-in-out;
+      }
+
+      .navbar-nav .nav-item .nav-link.active {
+        color: #faba0c !important;
+        position: relative;
+      }
+
+      .navbar-nav .nav-item .nav-link.active::after {
+        content: "";
+        position: absolute;
+        width: 28%;
+        left: 25%;
+        bottom: 8px;
+        border-bottom: 2px solid #faba0c;
+      }
+
+      .navbar .nav-item img {
+        border: 2px solid #fff;
+        background-color: #ddd;
+      }
+
+      .navbar .dropdown-menu {
+        border-radius: 0.375rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+      }
+
+      .dropdown-menu {
+        position: absolute;
+        right: 10rem;
+      }
+
+      .navbar-collapse {
+        justify-content: flex-end;
+      }
+
+      .container {
+        width: 100%;
+        padding: 0 15px;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 1;
+        transition: opacity 1s ease;
+        text-align: center;
+      }
+
+      .about {
+        position: relative;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+
+      .about p {
+        font-size: 1.2rem;
+        color: #fff;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .about-us {
+        text-align: center;
+        color: #fff;
+        font-size: 2.5rem;
+        font-weight: 800;
+        font-style: italic;
+      }
+
+      .about-content {
+        position: relative;
+        width: 100%;
+        padding: 0;
+        overflow: hidden;
+        text-align: left;
+      }
+
+      .about h1 {
+        font-size: 2.5rem;
+        color: #333;
+        padding: 0 0 0 18px;
+        text-transform: uppercase;
+        font-weight: 800;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+      }
+
+      .about p {
+        font-size: 1.1rem;
+        color: black;
+        line-height: 1.6;
+        margin-bottom: 30px;
+        text-align: justify;
+        max-width: 1000px;
+      }
+
+      .about p:last-child {
+        margin-bottom: 0;
+      }
+
+      .lead {
+        font-size: 90px;
+      }
+
+      .about-soilution-image {
+        width: 300px;
+        aspect-ratio: 1;
+        border-radius: 50%;
+      }
+
+      span {
+        font-family: "CustomFont";
+        font-size: 5rem;
+      }
+
+      .about-desc {
+        font-family: "Fraunces", serif;
+        font-size: 20px;
+        font-weight: 200;
+        letter-spacing: 1px;
+      }
+
+      .wis {
+        position: relative;
+        width: 480px;
+        height: 460px;
+      }
+
+      .section {
+        min-height: 100vh;
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 80px;
+      }
+
+      .sv1 {
+        position: relative;
+        width: 450px;
+        height: 350px;
+        border-radius: 12px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease;
+      }
+
+      .sv1:hover {
+        box-shadow: 0 12px 30px rgba(253, 249, 3, 0.671);
+      }
+
+      .sv-bg {
+        position: relative;
+        top: 20px;
+        left: -10px;
+        width: 100px;
+        height: 220px;
+        background: #faba0c;
+        z-index: 10;
+      }
+
+      #section1 .sec-leftside {
+        position: relative;
+        top: 8rem;
+      }
+
+      #section2 {
+        background: white;
+      }
+
+      #section2 .sec-rightside {
+        position: relative;
+        top: 8rem;
+      }
+
+      #section3 .leftside-shm {
+        position: relative;
+        top: 4rem;
+      }
+
+      iframe {
+        position: relative;
+        top: -20px;
+        border-radius: 10px;
+      }
+
+      .image-container {
+        position: relative;
+        display: inline-block;
+        width: 190px;
+        height: 190px;
+        border-radius: 50%;
+      }
+
+      .image-container img {
+        border-radius: 50%;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .border-image {
+        position: absolute;
+        top: -8px;
+        left: -2px;
+        right: 0;
+        bottom: 0;
+        background-image: url('{% static "images/team-border.png" %}');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        border-radius: 50%;
+        z-index: 1;
+        rotate: 180deg;
+      }
+
+      footer {
+        position: relative;
+        top: 40px;
+        background-color: black;
+        color: white;
+        padding: 40px 0;
+      }
+
+      .footer-container {
+        position: relative;
+        top: 30px;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .footer-about,
+      .footer-social,
+      .footer-support,
+      .footer-legal {
+        flex: 1;
+        padding: 10px;
+      }
+
+      .footer-about p,
+      .footer-support p {
+        font-size: 14px;
+      }
+
+      .footer-about h3 {
+        font-size: 3rem;
+      }
+
+      .footer-about p {
+        font-size: 1rem;
+      }
+
+      .footer-support,
+      .footer-legal {
+        margin-left: 90px;
+      }
+
+      .footer-support a {
+        color: #faba0c;
+      }
+
+      .footer-social ul,
+      .footer-legal ul {
+        list-style-type: none;
+        padding: 0;
+      }
+
+      .footer-social li,
+      .footer-legal li {
+        margin-bottom: 10px;
+      }
+
+      .footer-social a,
+      .footer-legal a {
+        text-decoration: none;
+        color: #333;
+      }
+
+      .footer-social a:hover,
+      .footer-legal a:hover {
+        color: #faba0c;
+      }
+
+      .footer-bottom {
+        position: relative;
+        bottom: -40px;
+        text-align: center;
+        margin-top: 20px;
+        font-size: 12px;
+      }
+
+      @media (min-width: 425px) and (max-width: 768px) {
+        .navbar {
+          padding: 20px 30px;
+        }
+
+        .navbar {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          z-index: 9999;
+          background-color: black;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+          font-size: 22px;
+        }
+
+        .nav-item {
+          text-align: left;
+        }
+
+        .navbar-toggler {
+          position: relative;
+          right: 0;
+          margin: 0;
+        }
+
+        .navbar-brand img {
+          width: 150px;
+          height: 6%0px;
+        }
+
+        .navbar-toggler-icon {
+          display: none;
+        }
+
+        .custom-toggler-icon {
+          width: 30px;
+          height: auto;
+        }
+
+        .navbar-nav .nav-item .nav-link.active::after {
+          content: "";
+          position: absolute;
+          width: 5%;
+          left: 20px;
+          bottom: 8px;
+          border-bottom: 2px solid #faba0c;
+        }
+
+        .lead {
+          font-size: 32px;
+        }
+
+        .service-desc {
+          font-size: 14px;
+          padding: 0 5px 0 5px;
+        }
+
+        .about-content h1 {
+          font-size: 24px;
+          padding-bottom: 0;
+          margin-bottom: 0;
+        }
+
+        .about-content p {
+          font-size: 14px;
+          padding-top: 15px;
+        }
+
+        .wis,
+        .sv1 {
+          display: none;
+        }
+
+        .about-content .section {
+          margin: 0;
+          padding: 0;
+        }
+
+        #section1 {
+          position: relative;
+          top: -80px;
+        }
+
+        #section2 {
+          position: relative;
+          top: -25rem;
+          z-index: -1;
+        }
+
+        #section3 {
+          position: relative;
+          top: -25rem;
+          z-index: -1;
+        }
+
+        .video {
+          position: relative;
+          top: 100px;
+        }
+
+        #section4 {
+          position: relative;
+          top: -15rem;
+          margin-bottom: 12rem;
+          z-index: -1;
+        }
+
+        footer {
+          position: relative;
+        }
+
+        .footer-about p {
+          font-size: 12px;
+          padding: 0 0 20px 0;
+        }
+
+        .footer-about,
+        .footer-support,
+        .footer-legal {
+          padding: 0 0 0 40px;
+          margin: 0;
+        }
+
+        .footer-support h3,
+        .footer-legal h3 {
+          font-size: 16px;
+        }
+
+        .footer-support p,
+        .footer-legal ul {
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- hero section -->
+    <div class="container div-section" id="home">
+      <nav
+        class="navbar navbar-expand-lg navbar-light"
+        id="navbar"
+        style="transition: background-color 0.3s ease-in-out"
+      >
+        <a class="navbar-brand" href="{% url 'index' %}"
+          ><img src="{% static 'images/lalala13.png' %}" alt="logo"
+        /></a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <img
+            src="{% static 'images/hamburger.png' %}"
+            alt="hamburger icon"
+            class="custom-toggler-icon"
+          />
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'index' %}">Home</a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link {% if request.path == '/about/' %}active{% endif %}"
+                href="{% url 'about' %}"
+                >About</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'services' %}">Services</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'login' %}">Sign in</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="about-us">
+        <span class="lead">About Us</span>
+        <p class="about-desc">
+          Empowering Farmers and Restoring Soil for a Sustainable Future
+        </p>
+      </div>
+    </div>
+
+    <!-- About Section -->
+    <div class="about">
+      <div class="about-content">
+        <div
+          class="row d-flex align-items-stretch section"
+          id="section1"
+          data-aos="fade-up"
+          data-aos-delay="100"
+        >
+          <div class="col-12 col-md-7 sec-leftside">
+            <h1>What is Soilution</h1>
+            <p class="me-3">
+              &emsp;Soilution is more than just a web app; it’s a comprehensive
+              platform built to bridge the gap between cutting-edge soil science
+              and everyday users. Whether you're a farmer looking to optimize
+              crop yield, an environmentalist working on restoration projects,
+              or simply someone with a passion for sustainable living, Soilution
+              offers the resources you need to make informed decisions about
+              soil care. Our platform integrates modern soil science with
+              user-friendly tools, providing data-driven insights and crop
+              recommendations for improving soil health and sustainability
+            </p>
+          </div>
+          <div class="col-12 col-md-5 d-flex align-items-center">
+            <img
+              src="{% static 'images/soil_sensor.png' %}"
+              alt="What is Soilution"
+              class="img-fluid wis"
+            />
+          </div>
+        </div>
+
+        <div
+          class="row d-flex align-items-stretch section"
+          id="section2"
+          data-aos="fade-up"
+          data-aos-delay="200"
+        >
+          <div class="col-12 col-md-5 d-flex align-items-center">
+            <img
+              src="{% static 'images/soil_vision.jpg' %}"
+              alt="Our Vision"
+              class="img-fluid sv1"
+            />
+          </div>
+          <div class="col-12 col-md-7 sec-rightside">
+            <h1>Our Vision</h1>
+            <p class="me-3">
+              &emsp;We believe that the foundation of all healthy ecosystems
+              starts with the soil. Healthy soil leads to thriving agriculture,
+              robust ecosystems, and resilient landscapes. Our vision is to be a
+              catalyst for global soil sustainability by providing accessible
+              tools, education, and solutions to help users better understand,
+              manage, and improve soil health.
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="row d-flex align-items-stretch section"
+          id="section3"
+          data-aos="fade-up"
+          data-aos-delay="300"
+        >
+          <div class="col-12 col-md-7 leftside-shm">
+            <h1>Why Soil Health Matters</h1>
+            <p class="me-3">
+              &emsp;Soil is much more than just dirt; it's the foundation of
+              life on Earth. Healthy soil plays a critical role in food
+              production, water retention, carbon sequestration, and maintaining
+              biodiversity. However, modern farming techniques, climate change,
+              and urban expansion have led to widespread soil degradation.
+              Issues like erosion, nutrient loss, contamination, and
+              biodiversity decline are just a few of the challenges we face. At
+              Soilution, we recognize that tackling these problems requires a
+              comprehensive approach. That’s why we've created tools to help
+              individuals take meaningful action—whether it's farmers seeking
+              guidance on organic practices or gardeners aiming to enrich their
+              soil. We are dedicated to offering the support and expertise
+              needed to restore and protect this essential natural resource.
+            </p>
+          </div>
+          <div class="col-12 col-md-5 d-flex align-items-center video">
+            <iframe
+              width="853"
+              height="480"
+              src="https://www.youtube.com/embed/pesqtODu_XM"
+              title="Why Soil Matters"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allowfullscreen
+            ></iframe>
+          </div>
+        </div>
+
+        <div
+          class="row d-flex align-items-center section"
+          id="section4"
+          style="height: 100vh; background-color: white"
+          data-aos="fade-up"
+          data-aos-delay="400"
+        >
+          <div class="col-12">
+            <h1 class="text-center mb-5">Meet Our Team</h1>
+            <div class="row text-center">
+              <div class="col-12 col-md-4 mb-4">
+                <div class="team-member">
+                  <div class="image-container">
+                    <img
+                      src="{% static 'images/the-boss.png' %}"
+                      alt="Team Member 1"
+                      class="img-fluid rounded-circle"
+                      style="width: 180px; height: 180px; object-fit: cover"
+                    />
+                    <div class="border-image"></div>
+                  </div>
+                  <h3 class="mt-3"><b>Arwin Madeja</b></h3>
+                  <p class="text-center">The Boss</p>
+                </div>
+              </div>
+              <div class="col-12 col-md-4 mb-4">
+                <div class="team-member">
+                  <div class="image-container">
+                    <img
+                      src="{% static 'images/the-prynz.jpg' %}"
+                      alt="Team Member 2"
+                      class="img-fluid rounded-circle"
+                      style="width: 180px; height: 180px; object-fit: cover"
+                    />
+                    <div class="border-image"></div>
+                  </div>
+                  <h3 class="mt-3"><b>Prynz Rafael Miraflor</b></h3>
+                  <p class="text-center">Environmental Specialist Wow</p>
+                </div>
+              </div>
+              <div class="col-12 col-md-4 mb-4">
+                <div class="team-member">
+                  <div class="image-container">
+                    <img
+                      src="{% static 'images/the-idk.jpg' %}"
+                      alt="Team Member 3"
+                      class="img-fluid rounded-circle"
+                      style="width: 180px; height: 180px; object-fit: cover"
+                    />
+                    <div class="border-image"></div>
+                  </div>
+                  <h3 class="mt-3"><b>Jun Rey Paynandos</b></h3>
+                  <p class="text-center">The idk</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-container">
+        <div class="footer-about">
+          <img src="{% static 'images/lalala13.png' %}" alt="" />
+          <p>Empowering Your Soil <br />for Optimal Growth</p>
+        </div>
+
+        <div class="footer-support">
+          <h3>Customer Support</h3>
+          <p>
+            Email:
+            <a href="#">support@soilution.com</a>
+          </p>
+          <p>Phone: <a href="#">+1 (555) 123-4567</a></p>
+        </div>
+
+        <div class="footer-legal">
+          <h3>Legal</h3>
+          <ul>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Disclaimer</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2025 Soilution. All Rights Reserved.</p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script>
+      // navbar-dropdown collapse
+      document.addEventListener("DOMContentLoaded", function () {
+        const navbar = document.getElementById("navbar");
+        const navbarToggle = document.querySelector(".navbar-toggler");
+        const navbarCollapse = document.getElementById("navbarNav");
+
+        function closeNavbarIfClickedOutside(event) {
+          if (
+            !navbar.contains(event.target) &&
+            !navbarToggle.contains(event.target)
+          ) {
+            if (navbarCollapse.classList.contains("show")) {
+              navbarToggle.click();
+            }
+          }
+        }
+
+        document.addEventListener("click", closeNavbarIfClickedOutside);
+      });
+
+      // animate on scroll
+      AOS.init({
+        duration: 1000,
+        easing: "ease-in-out",
+        once: true,
+        offset: 120,
+      });
+    </script>
+  </body>
+</html>

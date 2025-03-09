@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Confirm your registration</title>
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #8b8b8b;
+        padding: 20px;
+        color: #333333;
+      }
+      .container {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .btn-primary {
+        background-color: #0e9272;
+        border-color: #0e9272;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="text-center">Hello {{ user.first_name }},</h1>
+      <p class="lead">
+        Thank you for registering with us. Please click the button below to
+        confirm your email address and complete your registration:
+      </p>
+      <table
+        role="presentation"
+        cellpadding="0"
+        cellspacing="0"
+        style="width: 100%; text-align: center"
+      >
+        <tr>
+          <td style="text-align: center">
+            <a
+              href="http://{{ domain }}{% url 'confirm_email' uidb64=uid token=token %}"
+              style="
+                display: inline-block;
+                background-color: #0e9272;
+                color: white;
+                text-align: center;
+                padding: 10px 20px;
+                font-size: 14px;
+                font-weight: bold;
+                text-decoration: none;
+                border-radius: 4px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                margin-top: 20px;
+                margin-bottom: 20px;
+              "
+            >
+              Verify Email Address
+            </a>
+          </td>
+        </tr>
+      </table>
+      <p class="mt-4">
+        If you did not create an account, no further action is required.
+      </p>
+      <p class="footer mt-4">
+        Regards,<br />
+        Soilution Team
+        <br />
+      </p>
+      <hr />
+      <p>
+        If you're having trouble clicking the "Verify Email Address" button,
+        copy and paste the URL below into your web browser:
+      </p>
+      <p class="text-center">
+        <a
+          href="http://{{ domain }}{% url 'confirm_email' uidb64=uid token=token %}"
+          class="text-primary"
+        >
+          http://{{ domain }}{% url 'confirm_email' uidb64=uid token=token %}</a
+        >
+      </p>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
+</html>

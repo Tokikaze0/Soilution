@@ -1,0 +1,182 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}My Website{% endblock %}</title>
+    <!-- Add your CSS links here -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <style>
+      .navbar {
+        padding: 1rem;
+        background-color: transparent;
+        transition: background-color 0.3s ease-in-out;
+      }
+
+      .navbar-brand {
+        color: #fff !important;
+        font-size: 1.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+
+      .navbar-nav .nav-item .nav-link {
+        color: #fff !important;
+        padding: 0.8rem 1.2rem;
+        font-size: 1.1rem;
+        transition: color 0.3s ease, background-color 0.3s ease;
+      }
+
+      .navbar-nav .nav-item .nav-link:hover,
+      .navbar-nav .nav-item .nav-link.active {
+        color: #28a745 !important;
+        transition: background-color 0.3s ease-in-out;
+      }
+
+      .navbar .nav-item img {
+        border: 2px solid #fff;
+        background-color: #ddd;
+      }
+
+      .navbar .dropdown-menu {
+        border-radius: 0.375rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+      }
+
+      .dropdown-menu {
+        position: absolute;
+        right: 10rem;
+      }
+
+      .navbar-collapse {
+        justify-content: flex-end;
+      }
+
+      #navbar.scrolled {
+        background-color: rgba(0, 0, 0, 0.7) !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      #navbar.scrolled .nav-link {
+        color: #fff !important;
+      }
+
+      #navbar .nav-link:hover,
+      #navbar .nav-link.active {
+        color: #28a745 !important;
+        transition: background-color 0.3s ease-in-out;
+      }
+    </style>
+    {% block styles %}
+    <!-- <link rel="stylesheet" href="{% static 'css/index.css' %}" /> -->
+    {% endblock %}
+  </head>
+  <body>
+    <!-- Navbar (common for all pages) -->
+    <nav
+      class="navbar navbar-expand-lg navbar-light fixed-top"
+      id="navbar"
+      style="transition: background-color 0.3s ease-in-out"
+    >
+      <a class="navbar-brand" href="{% url 'index' %}">Soilution</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon" id="navbar=icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <!-- Home, Services, About Links -->
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'index' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'about' %}">About</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'services' %}">Services</a>
+          </li>
+
+          {% if user.is_authenticated %}
+          <!-- User Profile Image and Dropdown -->
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="navbarDropdown"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <!-- <img
+                src="{% if user.profile.image %}{{ user.profile.image.url }}{% else %}https://res.cloudinary.com/dwuhvmvoh/image/upload/v1737417711/zqo5uoevu2nu1lxmhtet.png{% endif %}"
+                class="rounded-circle"
+                width="30"
+                height="30"
+                alt=""
+              /> -->
+            </a>
+            <ul
+              class="dropdown-menu dropdown-menu-end"
+              aria-labelledby="navbarDropdown"
+            >
+              <!-- User's Name and Email (non-clickable) -->
+              <div
+                class="dropdown-item text-center"
+                style="pointer-events: none"
+              >
+                <!-- <strong>{{ user.get_full_name }}</strong><br />
+                <small>{{ user.email }}</small> -->
+              </div>
+              <li><hr class="dropdown-divider" /></li>
+              <li>
+                <!-- <a class="dropdown-item" href="{% url 'profile_update' %}"
+                  >Update Profile</a
+                > -->
+              </li>
+              <li>
+                <!-- <a class="dropdown-item" href="{% url 'uploaded_images' %}"
+                  >My Uploads</a
+                > -->
+              </li>
+              <li><hr class="dropdown-divider" /></li>
+              <li>
+                <!-- <a class="dropdown-item" href="{% url 'logout' %}">Logout</a> -->
+              </li>
+            </ul>
+          </li>
+          {% else %}
+          <li class="nav-item"></li>
+          {% endif %}
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content area where child templates will be inserted -->
+    <div class="container">{% block content %}{% endblock %}</div>
+
+    <!-- Footer (common for all pages) -->
+    <footer>
+      <p>© 2025 My Website</p>
+    </footer>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>

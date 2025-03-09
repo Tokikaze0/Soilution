@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Soilution Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="flex">
+    <!-- Sidebar -->
+    <div
+      id="sidebar"
+      class="bg-gray-900 text-white w-64 min-h-screen p-4 transition-all"
+    >
+      <button onclick="toggleSidebar()" class="text-white mb-4">☰</button>
+      <h2 class="text-xl font-bold">Soilution</h2>
+      <nav>
+        <ul>
+          <li class="mt-4"><a href="#" class="block py-2">Home</a></li>
+          <li class="mt-2"><a href="#" class="block py-2">Climatic Data</a></li>
+          <li class="mt-2"><a href="#" class="block py-2">Reports</a></li>
+          <li class="mt-2"><a href="#" class="block py-2">Controls</a></li>
+          <li class="mt-2"><a href="#" class="block py-2">Settings</a></li>
+          <li class="mt-2">
+            <a href="{% url 'logout' %}" class="block py-2">log out</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-6">
+      <h1 class="text-2xl font-bold">Dashboard</h1>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+        <div class="bg-white p-4 rounded shadow">
+          <p class="text-lg font-semibold">Soil Moisture</p>
+          <p class="text-2xl">87.50%</p>
+        </div>
+        <div class="bg-white p-4 rounded shadow">
+          <p class="text-lg font-semibold">Temperature</p>
+          <p class="text-2xl">32.50°C</p>
+        </div>
+        <div class="bg-white p-4 rounded shadow">
+          <p class="text-lg font-semibold">Humidity</p>
+          <p class="text-2xl">85%</p>
+        </div>
+        <div class="bg-white p-4 rounded shadow">
+          <p class="text-lg font-semibold">pH Level</p>
+          <p class="text-2xl">5.8</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("w-20");
+      }
+    </script>
+  </body>
+</html>
