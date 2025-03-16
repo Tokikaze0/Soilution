@@ -1,36 +1,96 @@
-# from allauth.socialaccount.signals import social_account_added
-# from django.contrib.auth import get_user_model
-# from django.dispatch import receiver
-# from django.shortcuts import redirect
+from allauth.socialaccount.models import SocialAccount
+from PIL import Image, ImageDraw, ImageFont
+from django.db.models.signals import post_save
+from django.contrib.auth.models import User
+from django.dispatch import receiver
+from supabase import create_client
+from django.conf import settings
+from .models import Profile
+import random
+import time
+import io
+import os
 
-# @receiver(social_account_added)
-# def social_account_added_handler(sender, request, sociallogin, **kwargs):
-#     user = sociallogin.user
-#     if user and user.is_active:
-#         # Ensure the user is logged in after linking the social account
-#         from django.contrib.auth import login as auth_login
-#         auth_login(request, user)
-#         return redirect('dashboard')  # Redirect to the dashboard (or your preferred page)
+supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
 
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        # Check if the user logged in via Google
+        try:
+            # Get the social account associated with the user
+            social_account = SocialAccount.objects.get(user=instance)
+            
+            # If the provider is 'google', skip profile creation with initials
+            if social_account.provider == 'google':
+                print("User authenticated via Google. Skipping profile image creation.")
+                
+                # Get the Google profile image URL from the extra_data
+                google_profile_image_url = social_account.extra_data.get('picture', None)
 
-# from allauth.socialaccount.signals import social_account_added
-# from django.contrib.auth import login as auth_login
-# from django.dispatch import receiver
-# from django.shortcuts import redirect
+                # If there's a Google profile image, set it in the user's profile
+                if google_profile_image_url:
+                    profile = Profile.objects.create(user=instance)
+                    profile.profile_image = google_profile_image_url  # Set Google profile image URL
+                    profile.save()
+                    print(f"Profile image set from Google: {google_profile_image_url}")
+                    return  # Skip the rest of the profile creation process for Google users
+                
+        except SocialAccount.DoesNotExist:
+            # If the user doesn't have a social account, continue with profile creation
+            pass
+        
+        # Create the profile for non-Google users
+        profile = Profile.objects.create(user=instance)
+        
+        # Handle initials more safely (this part will now only run for non-Google users)
+        first_name_initial = instance.first_name[0] if instance.first_name else ''  # Check if first_name is not empty
+        last_name_initial = instance.last_name[0] if instance.last_name else ''  # Check if last_name is not empty
+        
+        # Combine the initials and make them uppercase
+        initials = (first_name_initial + last_name_initial).upper()
+        
+        # Create a profile image based on the initials
+        img = Image.new('RGB', (100, 100), color=(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
+        d = ImageDraw.Draw(img)
+        font_path = os.path.join(settings.BASE_DIR, 'static/fonts/CheyenneSans-ExtraBold.otf')  # Path to your font file
+        try:
+            font = ImageFont.truetype(font_path, 40)  # Set a larger font size (e.g., 40)
+        except IOError:
+            font = ImageFont.load_default()
 
-# @receiver(social_account_added)
-# def social_account_added_handler(sender, request, sociallogin, **kwargs):
-#     user = sociallogin.user
-#     if user and user.is_active:
-#         # Check if the user already exists and if they are not a new user
-#         try:
-#             # You can get the user from the sociallogin instance if the email already exists
-#             user_instance = user
-#             if user_instance:
-#                 # Log the user in manually after social login
-#                 auth_login(request, user_instance)
-#                 return redirect('dashboard')  # Redirect to your preferred page
-#         except Exception as e:
-#             pass  # You can add custom error handling if needed
-#     else:
-#         return redirect('login')  # If the user is not found or isn't active, redirect them to the signup page
+        # Position the initials at the center of the image
+        width, height = d.textbbox((0, 0), initials, font=font)[2:4]  # Updated line
+        d.text(((100 - width) / 2, (100 - height) / 2), initials, font=font, fill=(255, 255, 255))
+
+        # Save the image to a file-like object
+        img_byte_array = io.BytesIO()
+        img.save(img_byte_array, format='PNG')
+        img_byte_array.seek(0)
+
+        # Now upload the image to Supabase Storage
+        timestamp = int(time.time())
+        file_name = f'profile_image/{instance.id}_{timestamp}_profile.png'
+        bucket_name = 'soilution-storage'  # Replace with your bucket name
+
+        # Upload image to Supabase storage bucket
+        file_data = img_byte_array.read()
+        response = supabase.storage.from_(bucket_name).upload(
+            file_name, 
+            file_data, 
+        )
+
+        # Print the response to debug its structure
+        print(f"Supabase Response: {response}")
+
+        # Check if the response contains necessary information
+        if hasattr(response, 'full_path'):
+            # Generate the public URL
+            public_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/{response.full_path}"
+            print(f"Generated Public URL: {public_url}")
+            profile.profile_image = public_url  # Save the public URL of the image to the profile
+            profile.save()
+            print(f"Profile image uploaded successfully: {public_url}")
+        else:
+            # Handle error or unexpected response
+            print(f"Error: {response}")

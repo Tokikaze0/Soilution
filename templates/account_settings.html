@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account Settings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+      integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+      .message-container {
+        position: absolute;
+        right: 10px;
+        width: 25rem;
+        margin-top: 10px;
+        text-align: center;
+      }
+
+      .message-container .error-message {
+        color: firebrick;
+        font-size: 16px;
+        font-weight: 600;
+        background-color: #f8d7da;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #f5c6cb;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .message-container .info-message {
+        color: #20a057;
+        font-size: 15px;
+        font-weight: 600;
+        background-color: #d1ecf1;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #bee5eb;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      }
+
+      #message-container {
+        transition: opacity 1s ease-out;
+      }
+
+      #saveBtn:disabled,
+      #email:disabled {
+        cursor: not-allowed;
+        background-color: #d1d5db;
+        border-color: #d1d5db;
+      }
+
+      #profile-dropdown {
+        border: 1px solid #aaa;
+      }
+    </style>
+  </head>
+  <body class="bg-white-100">
+    <nav
+      class="bg-white-800 text-black p-1 flex justify-between items-center border-b border-solid border-[#aaa] p-2"
+    >
+      <div class="flex items-center ml-4">
+        <!-- Logo -->
+        <img src="your-logo-url-here.png" alt="Logo" class="w-10 h-10 mr-4" />
+        <span class="text-xl font-bold">Soilution</span>
+      </div>
+
+      <!-- Profile Chip with Dropdown -->
+      <div class="relative">
+        <div
+          class="flex items-center space-x-2 text-white p-2 rounded-full cursor-pointer mr-4"
+          id="profile-button"
+        >
+          <!-- Avatar -->
+          <div class="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-300">
+            {% if profile_picture_url %}
+            <img
+              src="{{ profile_picture_url }}"
+              alt="User Avatar"
+              class="w-full h-full object-cover"
+            />
+            {% else %}
+            <span
+              class="w-full h-full flex justify-center items-center bg-gray-500 text-white text-sm"
+            >
+              {{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}
+            </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Dropdown Menu -->
+        <div
+          id="profile-dropdown"
+          class="absolute right-0 hidden mt-2 bg-white text-black rounded shadow-md w-48 z-10 p-1"
+        >
+          <ul class="py-2">
+            <li class="px-4 py-2 text-m text-black-600">
+              <strong>{{ user.first_name }}</strong> <br />
+              <span
+                class="text-sm text-gray-500 truncate"
+                style="max-width: 150px; display: inline-block"
+              >
+                {{ user.email }}
+              </span>
+            </li>
+            <li>
+              <a
+                href="{% url 'account_settings' %}"
+                class="block px-4 py-2 hover:bg-gray-200"
+                >Account settings</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'logout' %}"
+                class="block px-4 py-2 hover:bg-gray-200"
+                >Log Out</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    {% if messages %}
+    <div class="message-container" id="message-container">
+      {% for message in messages %} {% if message.tags == 'error' %}
+      <div class="error-message">
+        <h4>{{ message }}</h4>
+      </div>
+      {% else %}
+      <div class="info-message">
+        <h4>{{ message }}</h4>
+      </div>
+      {% endif %} {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="container mx-auto p-6">
+      <!-- Account Settings Card -->
+      <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg">
+        <h2 class="text-2xl font-semibold text-gray-700 mb-6">
+          Account Settings
+        </h2>
+
+        <form
+          id="account-settings-form"
+          method="POST"
+          enctype="multipart/form-data"
+          action="{% url 'account_settings' %}"
+        >
+          {% csrf_token %}
+          <div class="space-y-6">
+            <!-- Profile Picture -->
+            <div class="flex items-center space-x-6">
+              <!-- Profile Picture Section -->
+              <div class="flex-shrink-0">
+                {% if profile_picture_url %}
+                <img
+                  id="profilePicPreview"
+                  src="{{ profile_picture_url }}"
+                  alt="Profile Picture"
+                  class="w-32 h-32 rounded-full object-cover border-2 border-gray-300 ml-14 mt-[-70px]"
+                />
+                {% endif %}
+
+                <div class="mt-4">
+                  <!-- File Upload Button -->
+                  <label
+                    for="profile_picture"
+                    class="flex items-center justify-center space-x-2 px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-200 w-32 ml-14"
+                  >
+                    <svg
+                      width="20px"
+                      height="20px"
+                      viewBox="0 -0.5 25 25"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="text-gray-500"
+                    >
+                      <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                      <g
+                        id="SVGRepo_tracerCarrier"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></g>
+                      <g id="SVGRepo_iconCarrier">
+                        <path
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                          d="M17.265 4.16231L19.21 5.74531C19.3978 5.9283 19.5031 6.17982 19.5015 6.44201C19.5 6.70421 19.3919 6.9545 19.202 7.13531L17.724 8.93531L12.694 15.0723C12.6069 15.1749 12.4897 15.2473 12.359 15.2793L9.75102 15.8793C9.40496 15.8936 9.10654 15.6384 9.06702 15.2943L9.18902 12.7213C9.19806 12.5899 9.25006 12.4652 9.33702 12.3663L14.15 6.50131L15.845 4.43331C16.1743 3.98505 16.7938 3.86684 17.265 4.16231Z"
+                          stroke="#6B7280"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        ></path>
+                        <path
+                          d="M5.5 18.2413C5.08579 18.2413 4.75 18.5771 4.75 18.9913C4.75 19.4056 5.08579 19.7413 5.5 19.7413V18.2413ZM19.2 19.7413C19.6142 19.7413 19.95 19.4056 19.95 18.9913C19.95 18.5771 19.6142 18.2413 19.2 18.2413V19.7413ZM14.8455 6.22062C14.6904 5.83652 14.2534 5.65082 13.8693 5.80586C13.4852 5.9609 13.2995 6.39796 13.4545 6.78206L14.8455 6.22062ZM17.8893 9.66991C18.2933 9.57863 18.5468 9.17711 18.4556 8.77308C18.3643 8.36904 17.9628 8.1155 17.5587 8.20678L17.8893 9.66991ZM5.5 19.7413H19.2V18.2413H5.5V19.7413ZM13.4545 6.78206C13.6872 7.35843 14.165 8.18012 14.8765 8.8128C15.6011 9.45718 16.633 9.95371 17.8893 9.66991L17.5587 8.20678C16.916 8.35198 16.3609 8.12551 15.8733 7.69189C15.3725 7.24656 15.0128 6.63526 14.8455 6.22062L13.4545 6.78206Z"
+                          fill="#6B7280"
+                        ></path>
+                      </g>
+                    </svg>
+                    <span class="text-gray-500">Edit</span>
+                  </label>
+
+                  <!-- Hidden File Input -->
+                  <input
+                    type="file"
+                    name="profile_picture"
+                    id="profile_picture"
+                    class="hidden"
+                    accept="image/*"
+                  />
+
+                  <p class="text-sm text-gray-500 mt-2">
+                    Choose a new profile picture (optional)
+                  </p>
+                </div>
+              </div>
+
+              <!-- Input Fields Section -->
+              <div class="flex-grow">
+                <div class="space-y-6">           
+                  <!-- Username -->
+                  <div>
+                    <label
+                      for="username"
+                      class="block text-sm font-medium text-gray-700"
+                      >Username</label
+                    >
+                    <input
+                      type="text"
+                      name="username"
+                      id="username"
+                      value="{{ user.username }}"
+                      autocomplete="off"
+                      class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#0e9272] focus:border-[#0e9272]"
+                    />
+                  </div>
+
+                  <!-- First Name -->
+                  <div>
+                    <label
+                      for="first_name"
+                      class="block text-sm font-medium text-gray-700"
+                      >First Name</label
+                    >
+                    <input
+                      type="text"
+                      name="first_name"
+                      id="first_name"
+                      value="{{ user.first_name }}"
+                      autocomplete="off"
+                      class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#0e9272] focus:border-[#0e9272]"
+                    />
+                  </div>
+
+                  <!-- Last Name -->
+                  <div>
+                    <label
+                      for="last_name"
+                      class="block text-sm font-medium text-gray-700"
+                      >Last Name</label
+                    >
+                    <input
+                      type="text"
+                      name="last_name"
+                      id="last_name"
+                      value="{{ user.last_name }}"
+                      autocomplete="off"
+                      class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-[#0e9272] focus:border-[#0e9272]"
+                    />
+                  </div>
+
+                  <!-- Email -->
+                  <div>
+                    <label
+                      for="email"
+                      class="block text-sm font-medium text-gray-700"
+                      >Email</label
+                    >
+                    <input
+                      type="text"
+                      name="email"
+                      id="email"
+                      value="{{ user.email }}"
+                      autocomplete="off"
+                      disabled
+                      class="mt-1 block w-full px-4 py-2 bg-gray-300 border border-gray-300 rounded-md focus:outline-none focus:ring-[#0e9272] focus:border-[#0e9272]"
+                    />
+                  </div>
+
+                  <!-- Save Button -->
+                  <div class="flex justify-end">
+                    <button
+                      type="submit"
+                      id="saveBtn"
+                      class="px-6 py-2 bg-[#0e9272] text-white rounded-lg hover:bg-[#0d8668] focus:outline-none focus:ring-2 focus:ring-[#0e9272] cursor-pointer"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- button disabled -->
+    <script>
+      const saveButton = document.getElementById("saveBtn");
+      saveButton.disabled = true;
+
+      const checkForChanges = () => {
+        const firstName = document.getElementById("first_name").value;
+        const lastName = document.getElementById("last_name").value;
+        const username = document.getElementById("username").value;
+        const profilePicture =
+          document.getElementById("profile_picture").files.length;
+
+        if (
+          firstName !== "{{ user.first_name }}" ||
+          lastName !== "{{ user.last_name }}" ||
+          username !== "{{ user.username }}" ||
+          profilePicture > 0
+        ) {
+          saveButton.disabled = false;
+        } else {
+          saveButton.disabled = true;
+        }
+      };
+
+      document
+        .getElementById("first_name")
+        .addEventListener("input", checkForChanges);
+      document
+        .getElementById("last_name")
+        .addEventListener("input", checkForChanges);
+      document
+        .getElementById("username")
+        .addEventListener("input", checkForChanges);
+      document
+        .getElementById("profile_picture")
+        .addEventListener("change", checkForChanges);
+    </script>
+
+    <!-- navbar dropdown -->
+    <script>
+      const profileButton = document.getElementById("profile-button");
+      const profileDropdown = document.getElementById("profile-dropdown");
+
+      profileButton.addEventListener("click", () => {
+        profileDropdown.classList.toggle("hidden");
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!profileButton.contains(event.target)) {
+          profileDropdown.classList.add("hidden");
+        }
+      });
+    </script>
+
+    <!-- Image preview -->
+    <script>
+      const profilePictureInput = document.getElementById('profile_picture');
+      const profilePicPreview = document.getElementById('profilePicPreview');
+    
+      profilePictureInput.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+    
+        if (file) {
+          const reader = new FileReader();
+    
+          reader.onload = function(e) {
+            profilePicPreview.src = e.target.result;
+          };
+    
+          reader.readAsDataURL(file);
+        }
+      });
+    </script>
+
+    <!-- show/hide message for 3 sec -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var messageContainer = document.getElementById("message-container");
+
+        if (messageContainer) {
+          setTimeout(function () {
+            messageContainer.style.opacity = 0;
+            setTimeout(function () {
+              messageContainer.style.display = "none";
+            }, 1000);
+          }, 5000);
+        }
+      });
+    </script>
+  </body>
+</html>

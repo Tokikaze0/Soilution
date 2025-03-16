@@ -12,7 +12,16 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.utils import timezone
 from django.urls import reverse
-from detector.models import PasswordReset
+from detector.models import PasswordReset, Workspace
+from .forms import WorkspaceForm
+from allauth.socialaccount.models import SocialAccount
+from django.http import JsonResponse
+from supabase import create_client, Client
+from .forms import UserProfileForm
+from .models import Profile
+# from django.shortcuts import render, get_object_or_404
+
+supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
 
 def index(request):
     return render(request, 'detector/index.html')
@@ -23,17 +32,64 @@ def about(request):
 def services(request):
     return render(request, 'detector/services.html')
 
+def insights(request):
+    user = request.user
+    profile = user.profile
+
+    profile_picture_url = profile.get_profile_image()
+
+    return render(request, 'insight.html', {'profile_picture_url': profile_picture_url})
+
+def crop_details(request):
+    user = request.user
+    profile = user.profile
+
+    profile_picture_url = profile.get_profile_image()
+
+    return render(request, 'crop_details.html', {'profile_picture_url': profile_picture_url})
+
+def logs(request):
+    user = request.user
+    profile = user.profile
+
+    profile_picture_url = profile.get_profile_image()
+
+    return render(request, 'logs.html', {'profile_picture_url': profile_picture_url})
+
+def reports(request):
+    user = request.user
+    profile = user.profile
+
+    profile_picture_url = profile.get_profile_image()
+
+    return render(request, 'reports.html', {'profile_picture_url': profile_picture_url})
+
 def login(request):
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
         
-        user = authenticate(request, username=email, password=password)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            user = None
+
+        if user:
+            # Check if user has a linked social account (e.g., Google)
+            social_account = SocialAccount.objects.filter(user=user, provider='google').first()
+
+            if social_account:
+                # User logged in with Google; allow login via Google only
+                messages.error(request, "The email is associated with google. Please log in using Google Authentication or reset your password.")
+                return redirect('login')
         
+        user = authenticate(request, username=email, password=password)
+
         if user is not None:
             if user.is_active:
                 auth_login(request, user)
-                return redirect('dashboard')
+                messages.info(request, "")
+                return redirect('workspace')
             else:
                 messages.info(request, "Please verify your email. We've sent you another verification email.")
                 return redirect('login')
@@ -125,7 +181,23 @@ def verification_email(request):
 
 @login_required
 def dashboard(request):
-    return render(request, 'dashboard.html')
+    user = request.user
+    user_profile = user.profile
+    profile = user.profile
+    
+    profile_picture_url = profile.get_profile_image()
+    workspace = Workspace.objects.filter(user=request.user)
+
+    selected_workspace_id = request.GET.get('workspace')
+    selected_workspace = None
+
+    if selected_workspace_id:
+       selected_workspace = Workspace.objects.filter(id=selected_workspace_id, user=request.user).first()
+       if selected_workspace:
+           user.profile.selected_workspace = selected_workspace
+           user.profile.save()
+
+    return render(request, 'dashboard.html', {'user_profile': user_profile, 'workspace': workspace, 'profile_picture_url': profile_picture_url, 'selected_workspace': selected_workspace})
 
 def ForgotPassword(request):
     if request.method == "POST":
@@ -224,4 +296,156 @@ def logoutView(request):
     logout(request)
     return redirect('index')
 
+@login_required
+def workspace(request):
+    user = request.user
+    profile = user.profile
 
+    profile_picture_url = profile.get_profile_image()
+    workspace = Workspace.objects.filter(user=request.user)
+
+    return render(request, "workspace.html", {'user': request.user, 'workspace': workspace, 'profile_picture_url': profile_picture_url})
+
+@login_required
+def add_workspace(request):
+    if request.method == 'POST':
+        form = WorkspaceForm(request.POST)
+        if form.is_valid():
+            # Save the workspace but don't commit to DB yet
+            workspace = form.save(commit=False)
+            workspace.user = request.user
+            workspace.save()
+
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                # Return a JSON response for AJAX request
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Workspace created successfully!',
+                    'workspace': {
+                        'id': workspace.id,
+                        'name': workspace.name,
+                        'description': workspace.description
+                    }
+                })
+
+            workspaces = Workspace.objects.all().order_by('-id')
+            return render(request, 'workspace.html', {'workspace': workspaces, 'form': form})
+
+        else:
+            # Log form errors if any
+            print("Form errors:", form.errors)  # For debugging purposes
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': form.errors})
+            else:
+                return render(request, 'workspace.html', {'form': form})
+    else:
+        form = WorkspaceForm()
+
+    workspaces = Workspace.objects.all().order_by('-id')
+    return render(request, 'workspace.html', {'form': form, 'workspace': workspaces})
+
+# 1
+# @login_required
+# def update_account(request):
+#     user = request.user
+#     profile, created = Profile.objects.get_or_create(user=user)
+
+#     if request.method == "POST":
+#         form = UserProfileForm(request.POST, request.FILES, instance=request.user)
+#         if form.is_valid():
+#             form.save()
+
+#             if 'profile_picture' in request.FILES:
+#                 profile.profile_image = request.FILES['profile_picture']
+#                 profile.save()
+
+#             messages.success(request, "Your account has been updated successfully!")
+#             return redirect('account_settings')
+#         else:
+#             messages.error(request, "Please correct the errors below.")
+#     else:
+#         form = UserProfileForm(instance=request.user)
+
+#     # Get profile picture URL
+#     profile_picture_url = profile.profile_image if profile.profile_image else None
+#     print(f"Profile picture URL: {profile_picture_url}")
+
+#     # Check if the user has a connected social account (Google)
+#     try:
+#         social_account = SocialAccount.objects.get(user=user, provider='google')
+#         profile_picture_url = social_account.extra_data.get('picture')
+#     except SocialAccount.DoesNotExist:
+#         profile_picture_url = None
+
+#     context = {
+#         'form': form,
+#         'SUPABASE_URL': settings.SUPABASE_URL,
+#         'SUPABASE_SERVICE_ROLE_KEY': settings.SUPABASE_SERVICE_ROLE_KEY,
+#         'user': user,
+#         'profile_picture_url': profile.profile_image,
+#     }
+
+#     return render(request, 'account_settings.html', context)
+
+@login_required
+def update_account(request):
+    user = request.user
+    profile, created = Profile.objects.get_or_create(user=user)
+
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, request.FILES, instance=user)  # Handle file upload
+
+        if form.is_valid():
+            # Save the user profile and handle image upload to Supabase within the form save method
+            form.save()
+
+            # check if the user uploaded a new profile image
+            profile_picture_url = profile.get_profile_image()
+
+            if request.FILES.get('profile_image'):  # Check if a new image was uploaded
+                profile_picture = request.FILES['profile_image']
+
+                # Upload image to Supabase Storage
+                supabase_url = settings.SUPABASE_URL
+                supabase_key = settings.SUPABASE_SERVICE_ROLE_KEY
+                supabase: Client = create_client(supabase_url, supabase_key)
+
+                # Generate a unique file name and upload the file
+                file_name = f"profile_images/{user.id}_{profile_picture.name}"
+                file_data = profile_picture.read()
+
+                # Upload to Supabase storage
+                bucket_name = "soilution-storage"
+                response = supabase.storage.from_(bucket_name).upload(file_name, file_data)
+
+                if hasattr(response, 'full_path'):  # If upload was successful, save the URL
+                    profile.profile_image = f"{supabase_url}/storage/v1/object/public/{response.full_path}"
+                    profile.save()
+
+            messages.success(request, "Your account has been updated successfully!")
+            return redirect('account_settings')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = UserProfileForm(instance=user)
+
+    # Get the profile picture URL (from Profile model)
+    profile_picture_url = profile.get_profile_image()
+
+    context = {
+        'form': form,
+        'user': user,
+        'profile_picture_url': profile_picture_url,
+    }
+
+    return render(request, 'account_settings.html', context)
+
+# def workspace_data(request, id):
+#     workspace = get_object_or_404(Workspace, id=id)
+#     # Return the workspace data as JSON
+#     data = {
+#         'name': workspace.name,
+#         'description': workspace.description,
+#         # Add other fields you need to update dynamically
+#     }
+#     return JsonResponse(data)

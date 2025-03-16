@@ -148,16 +148,22 @@ STATICFILES_DIRS = [
 
 # STATIC_ROOT = BASE_DIR / "staticfiles"
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# AUTH_USER_MODEL = 'detector.CustomUser' 
 
 AUTHENTICATION_BACKENDS = [
     'detector.backends.EmailBackend',
     'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
+    # 'detector.backends.GoogleAuthBackend',
 ]
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -180,7 +186,7 @@ SOCIALACCOUNT_PROVIDERS = {
 ACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 
-LOGIN_REDIRECT_URL = 'dashboard'
+LOGIN_REDIRECT_URL = 'workspace'
 LOGOUT_REDIRECT_URL = '/'
 
 SOCIALACCOUNT_LOGIN_ON_GET = True
@@ -202,3 +208,6 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 # ACCOUNT_EMAIL_VERIFICATION = 'mandatory'  # You can change it to 'optional' or 'none'
 # ACCOUNT_EMAIL_REQUIRED = True
+
+SUPABASE_URL = os.environ.get('SUPABASE_URL')
+SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
