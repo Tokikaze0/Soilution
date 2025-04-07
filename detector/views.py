@@ -32,6 +32,9 @@ def about(request):
 def services(request):
     return render(request, 'detector/services.html')
 
+def admin_dashboard(request):
+    return render(request, 'admin/admin_dashboard.html')
+
 def insights(request):
     user = request.user
     profile = user.profile
@@ -55,6 +58,14 @@ def logs(request):
     profile_picture_url = profile.get_profile_image()
 
     return render(request, 'logs.html', {'profile_picture_url': profile_picture_url})
+
+def settings(request):
+    user = request.user
+    profile = user.profile
+
+    profile_picture_url = profile.get_profile_image()
+
+    return render(request, 'settings.html', {'profile_picture_url': profile_picture_url})
 
 def reports(request):
     user = request.user
@@ -88,10 +99,14 @@ def login(request):
         if user is not None:
             if user.is_active:
                 auth_login(request, user)
-                messages.info(request, "")
-                return redirect('workspace')
+                profile = user.profile
+                if profile.role == 'admin':
+                    return redirect('admin_dashboard')  # Change this to your actual admin page URL
+                else:
+                    # Redirect to the user workspace or default user page
+                    return redirect('workspace')
             else:
-                messages.info(request, "Please verify your email. We've sent you another verification email.")
+                messages.error(request, "Please verify your email. We've sent you another verification email.")
                 return redirect('login')
 
         else:
@@ -153,6 +168,55 @@ def register(request):
             return redirect('verification_email')
 
     return render(request, 'register.html')
+
+def admin_register(request):
+    if request.method == "POST":
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        user_data_has_error = False
+
+        if User.objects.filter(username=username).exists():
+            user_data_has_error = True
+            messages.error(request, "This username is already existed.")
+
+        if User.objects.filter(email=email).exists():
+            user_data_has_error = True
+            messages.error(request, "This email is already in use. Please use a different email address.")
+
+        if len(password) < 5:
+            user_data_has_error = True
+            messages.error(request, "Password must be at least 5 characters")
+
+        if user_data_has_error:
+            return redirect('register')
+        else:
+            new_user = User.objects.create_user(
+                first_name=first_name,
+                last_name=last_name,
+                username=username,
+                email=email, 
+                password=password,
+                is_active=True
+            )
+
+            profile, created = Profile.objects.get_or_create(user=new_user)
+            if created:
+                # If the profile was created, set the role to 'admin'
+                profile.role = 'admin'
+                profile.save()
+            else:
+                # If the profile already exists, update the role to 'admin'
+                profile.role = 'admin'
+                profile.save()
+
+            messages.success(request, "Account created successfully! You can now log in.")
+            return redirect('login')
+
+    return render(request, 'admin/admin_register.html')
 
 def confirm_email(request, uidb64, token):
     try:
@@ -343,49 +407,6 @@ def add_workspace(request):
 
     workspaces = Workspace.objects.all().order_by('-id')
     return render(request, 'workspace.html', {'form': form, 'workspace': workspaces})
-
-# 1
-# @login_required
-# def update_account(request):
-#     user = request.user
-#     profile, created = Profile.objects.get_or_create(user=user)
-
-#     if request.method == "POST":
-#         form = UserProfileForm(request.POST, request.FILES, instance=request.user)
-#         if form.is_valid():
-#             form.save()
-
-#             if 'profile_picture' in request.FILES:
-#                 profile.profile_image = request.FILES['profile_picture']
-#                 profile.save()
-
-#             messages.success(request, "Your account has been updated successfully!")
-#             return redirect('account_settings')
-#         else:
-#             messages.error(request, "Please correct the errors below.")
-#     else:
-#         form = UserProfileForm(instance=request.user)
-
-#     # Get profile picture URL
-#     profile_picture_url = profile.profile_image if profile.profile_image else None
-#     print(f"Profile picture URL: {profile_picture_url}")
-
-#     # Check if the user has a connected social account (Google)
-#     try:
-#         social_account = SocialAccount.objects.get(user=user, provider='google')
-#         profile_picture_url = social_account.extra_data.get('picture')
-#     except SocialAccount.DoesNotExist:
-#         profile_picture_url = None
-
-#     context = {
-#         'form': form,
-#         'SUPABASE_URL': settings.SUPABASE_URL,
-#         'SUPABASE_SERVICE_ROLE_KEY': settings.SUPABASE_SERVICE_ROLE_KEY,
-#         'user': user,
-#         'profile_picture_url': profile.profile_image,
-#     }
-
-#     return render(request, 'account_settings.html', context)
 
 @login_required
 def update_account(request):

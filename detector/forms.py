@@ -30,7 +30,6 @@ class UserProfileForm(forms.ModelForm):
         if commit:
             user.save()
 
-        # Handle profile image saving to Supabase if provided
         profile_picture = self.cleaned_data.get('profile_picture')
 
         if profile_picture:

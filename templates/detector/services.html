@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Services - Soilution</title>
-    <!-- <link rel="icon" type="image/png" href="{% static 'images/smiley.png' %}" /> -->
+    <link rel="icon" type="image/png" href="{% static 'images/sll2.png' %}" />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -35,18 +35,18 @@
 
       body {
         font-family: Arial, sans-serif;
-        background-image: url("{% static 'images/soil_image4.jpg' %}");
-        background-size: cover;
-        background-position: center;
+        background-image: url("{% static 'images/s_bg2.png' %}");
+        background-size: 60% auto;
+        background-position: right calc(50% - 50%);
         background-repeat: no-repeat;
-        background-position: top;
+        /* background-position: top; */
         margin: 0;
         display: flex;
         flex-direction: column;
         height: 100vh;
       }
 
-      body::before {
+      /* body::before {
         content: "";
         position: absolute;
         top: 0;
@@ -55,7 +55,7 @@
         height: 100%;
         background-color: rgba(0, 0, 0, 0.85);
         z-index: -1;
-      }
+      } */
 
       .navbar {
         position: absolute;
@@ -69,27 +69,28 @@
       }
 
       .navbar-brand {
-        color: #fff !important;
+        color: #2bdf78 !important;
         font-size: 1.8rem;
         font-weight: bold;
         text-transform: uppercase;
       }
 
       .navbar-nav .nav-item .nav-link {
-        color: #fff !important;
+        color: #2bdf78 !important;
         padding: 0.8rem 1.2rem;
         font-size: 1.1rem;
+        font-weight: 700;
         transition: color 0.3s ease, background-color 0.3s ease;
       }
 
       .navbar-nav .nav-item .nav-link:hover,
       .navbar-nav .nav-item .nav-link.active {
-        color: #faba0c !important;
+        color: #2bdf78 !important;
         transition: background-color 0.3s ease-in-out;
       }
 
       .navbar-nav .nav-item .nav-link.active {
-        color: #faba0c !important;
+        color: #2bdf78 !important;
         position: relative;
       }
 
@@ -99,7 +100,7 @@
         width: 28%;
         left: 25%;
         bottom: 8px;
-        border-bottom: 2px solid #faba0c;
+        border-bottom: 2px solid #2bdf78;
       }
 
       .navbar .nav-item img {
@@ -148,7 +149,7 @@
 
       .about-us {
         text-align: center;
-        color: #fff;
+        color: #000;
         font-size: 2.5rem;
         font-weight: 800;
         font-style: italic;
@@ -156,6 +157,8 @@
 
       .lead {
         font-size: 90px;
+        position: relative;
+        left: -20rem;
       }
 
       span {
@@ -165,6 +168,9 @@
 
       .service-desc {
         font-family: "Fraunces", serif;
+        position: relative;
+        left: -16rem;
+        width: 27rem;
         font-size: 20px;
         font-weight: 200;
         letter-spacing: 1px;
@@ -187,7 +193,7 @@
 
       .feature-item:hover {
         transform: translateY(-10px);
-        box-shadow: 0 12px 30px rgba(253, 249, 3, 0.671);
+        box-shadow: 0 12px 30px rgba(43, 223, 120, 0.671);
       }
 
       .feature-item img {
@@ -252,7 +258,7 @@
       }
 
       .footer-support a {
-        color: #faba0c;
+        color: #2bdf78;
       }
 
       .footer-social ul,
@@ -274,7 +280,7 @@
 
       .footer-social a:hover,
       .footer-legal a:hover {
-        color: #faba0c;
+        color: #2bdf78;
       }
 
       .footer-bottom {
@@ -395,7 +401,7 @@
         style="transition: background-color 0.3s ease-in-out"
       >
         <a class="navbar-brand" href="{% url 'index' %}"
-          ><img src="{% static 'images/lalala13.png' %}" alt="logo"
+          ><img src="{% static 'images/sl.png' %}" alt="logo" width="65px" height="50px"
         /></a>
         <button
           class="navbar-toggler"
@@ -434,7 +440,7 @@
         </div>
       </nav>
 
-      <div class="about-us">
+      <div class="about-us" data-aos="fade-up" data-aos-delay="100">
         <span class="lead">Our Services</span>
         <p class="service-desc">
           Your Solution for Optimized Crop Growth through Soil Monitoring
@@ -455,7 +461,7 @@
           <div class="col-md-6 mb-4">
             <div class="feature-item">
               <img
-                src="{% static 'images/ground.png' %}"
+                src="{% static 'images/ground (2).png' %}"
                 alt="soil feature image"
                 class="img-fluid mb-3"
               />
@@ -470,7 +476,7 @@
           <div class="col-md-6 mb-4">
             <div class="feature-item">
               <img
-                src="{% static 'images/plant-a-tree.png' %}"
+                src="{% static 'images/plant-a-tree (1).png' %}"
                 alt="soil feature image"
                 class="img-fluid mb-3"
               />
@@ -488,7 +494,7 @@
           <div class="col-md-6 mb-4">
             <div class="feature-item">
               <img
-                src="{% static 'images/progress.png' %}"
+                src="{% static 'images/progress (1).png' %}"
                 alt="soil feature image"
                 class="img-fluid mb-3"
               />
@@ -503,7 +509,7 @@
           <div class="col-md-6 mb-4">
             <div class="feature-item">
               <img
-                src="{% static 'images/analytics.png' %}"
+                src="{% static 'images/analytics (1).png' %}"
                 alt="soil feature image"
                 class="img-fluid mb-3"
               />
@@ -535,7 +541,7 @@
           <div class="col-md-6 mb-4">
             <div class="feature-item">
               <img
-                src="{% static 'images/growth.png' %}"
+                src="{% static 'images/growth (1).png' %}"
                 alt="soil feature image"
                 class="img-fluid mb-3"
               />
@@ -549,7 +555,7 @@
           <div class="col-md-6 mb-4">
             <div class="feature-item">
               <img
-                src="{% static 'images/subsidy.png' %}"
+                src="{% static 'images/subsidy (1).png' %}"
                 alt="soil feature image"
                 class="img-fluid mb-3"
               />
@@ -566,7 +572,7 @@
           <div class="col-md-6 mb-4">
             <div class="feature-item">
               <img
-                src="{% static 'images/save-the-world.png' %}"
+                src="{% static 'images/save-the-world (1).png' %}"
                 alt="soil feature image"
                 class="img-fluid mb-3"
               />
@@ -580,7 +586,7 @@
           <div class="col-md-6 mb-4">
             <div class="feature-item">
               <img
-                src="{% static 'images/check-mark.png' %}"
+                src="{% static 'images/check-mark (2).png' %}"
                 alt="soil feature image"
                 class="img-fluid mb-3"
               />
@@ -599,7 +605,7 @@
     <footer>
       <div class="footer-container">
         <div class="footer-about">
-          <img src="{% static 'images/lalala13.png' %}" alt="" />
+          <img src="{% static 'images/slll.png' %}" alt="" />
           <p class="footer-sassy">
             Empowering Your Soil <br />for Optimal Growth
           </p>
@@ -609,9 +615,9 @@
           <h3>Customer Support</h3>
           <p>
             Email:
-            <a href="#">support@soilution.com</a>
+            <a href="#">soilution42@gmail.com</a>
           </p>
-          <p>Phone: <a href="#">+1 (555) 123-4567</a></p>
+          <p>Phone: <a href="#">+63 9784 324 5766</a></p>
         </div>
 
         <div class="footer-legal">

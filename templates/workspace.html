@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    {% load static %}
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Soilution | Workspace</title>
+    <link rel="icon" type="image/png" href="{% static 'images/sll2.png' %}" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script
@@ -180,12 +182,16 @@
   <body class="bg-white-100">
     <!-- Navbar -->
     <nav
-      class="bg-white-800 text-black p-1 flex justify-between items-center border-b border-solid border-[#aaa] p-2"
+      class="bg-white-800 text-black p-1 flex justify-between items-center border-b border-solid border-[#aaa] p-2 pl-0 pr-0"
     >
-      <div class="flex items-center ml-4">
-        <!-- Logo -->
-        <img src="your-logo-url-here.png" alt="Logo" class="w-10 h-10 mr-4" />
-        <span class="text-xl font-bold">Soilution</span>
+      <div class="flex items-center ml-2">
+        <a
+          href="{% url 'workspace' %}"
+          ><img
+            src="{% static 'images/sl.png' %}"
+            alt="Logo"
+            class="w-12 h-9 mr-4"
+        /></a>
       </div>
 
       <!-- Profile Chip with Dropdown -->
@@ -215,7 +221,7 @@
         <!-- Dropdown Menu -->
         <div
           id="profile-dropdown"
-          class="absolute right-0 hidden bg-white text-black rounded shadow-md w-48 z-10 p-1"
+          class="absolute right-0 hidden bg-white text-black rounded shadow-md w-48 z-10 p-1 mr-2"
         >
           <ul class="py-2">
             <li class="px-4 py-2 text-m text-black-600">

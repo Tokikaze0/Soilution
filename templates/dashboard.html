@@ -4,7 +4,8 @@
     {% load static %}
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Soilution Dashboard</title>
+    <title>Dashboard</title>
+    <link rel="icon" type="image/png" href="{% static 'images/sll2.png' %}" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
@@ -52,12 +53,16 @@
   <body class="flex flex-col h-screen">
     <!-- Navbar -->
     <nav
-      class="bg-white fixed w-full text-black p-1 flex justify-between items-center border-b border-solid border-[#aaa] p-2 z-10"
+      class="bg-white fixed w-full text-black flex justify-between items-center border-b border-solid border-[#aaa] p-2 pl-0 pr-0 z-10"
     >
-      <div class="flex items-center ml-4">
-        <!-- Logo -->
-        <img src="your-logo-url-here.png" alt="Logo" class="w-10 h-10 mr-4" />
-        <span class="text-xl font-bold">Soilution</span>
+      <div class="flex items-center ml-2">
+        <a
+          href="{% url 'workspace' %}"
+          ><img
+            src="{% static 'images/sl.png' %}"
+            alt="Logo"
+            class="w-12 h-9 mr-4"
+        /></a>
       </div>
 
       <!-- Current Workspace Display and Dropdown -->
@@ -288,6 +293,20 @@
                   height="18"
                 /><span class="opacity-0 group-hover:opacity-100 transition-all"
                   >Reports
+                </span></a
+              >
+            </li>
+            <li
+              class="mt-4 mb-5 relative flex items-center space-x-4 text-black group cursor-pointer"
+            >
+              <a href="{% url 'settings' %}" class="flex items-center space-x-2 active-link"
+                ><img
+                  src="{% static 'images/settings.png' %}"
+                  alt=""
+                  width="18"
+                  height="18"
+                /><span class="opacity-0 group-hover:opacity-100 transition-all"
+                  >Settings
                 </span></a
               >
             </li>

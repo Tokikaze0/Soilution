@@ -30,9 +30,10 @@ class Workspace(models.Model):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     profile_image = models.URLField(max_length=200, blank=True, null=True)
+    role = models.CharField(max_length=50, choices=[('admin', 'Admin'), ('user', 'User')], default='user')
 
     def __str__(self):
-        return f"Profile for {self.user.username}"
+        return f"Profile for {self.user.username} - {self.role}"
 
     def get_profile_image(self):
         return self.profile_image
