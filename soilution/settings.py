@@ -106,6 +106,8 @@ SESSION_COOKIE_AGE = 3600  # 1 hour for example
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SECURE = False  # Set to True in production when using HTTPS
 
+# CSRF_COOKIE_SECURE = False
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

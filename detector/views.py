@@ -59,14 +59,6 @@ def logs(request):
 
     return render(request, 'logs.html', {'profile_picture_url': profile_picture_url})
 
-def settings(request):
-    user = request.user
-    profile = user.profile
-
-    profile_picture_url = profile.get_profile_image()
-
-    return render(request, 'settings.html', {'profile_picture_url': profile_picture_url})
-
 def reports(request):
     user = request.user
     profile = user.profile
@@ -460,6 +452,15 @@ def update_account(request):
     }
 
     return render(request, 'account_settings.html', context)
+
+def dashboard_s(request):
+    user = request.user
+    profile = user.profile
+
+    profile_picture_url = profile.get_profile_image()
+
+    return render(request, 'dashboard_settings.html', {'profile_picture_url': profile_picture_url})
+
 
 # def workspace_data(request, id):
 #     workspace = get_object_or_404(Workspace, id=id)
