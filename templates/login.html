@@ -79,6 +79,24 @@
         z-index: 1;
       }
 
+      .error-text {
+        color: #e74c3c;
+        font-size: 0.85em;
+        margin-top: -25px;
+        margin-left: 5px;
+        margin-bottom: -20px;
+        display: block;
+      }
+
+      .error-password {
+        position: relative;
+        color: #e74c3c;
+        font-size: 0.85em;
+        margin-top: -22px;
+        margin-bottom: 15px;
+        display: block;
+      }
+
       .input-group input:focus {
         border-color: #0e9272;
       }
@@ -121,6 +139,8 @@
       .btn {
         width: 100%;
         height: 50px;
+        margin-top: 10px;
+        margin-bottom: -8px;
         font-size: 18px;
         font-weight: 600;
         padding: 0 20px;
@@ -189,32 +209,58 @@
         color: #0e9272;
       }
 
+      .form-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+      }
+
+      .error-container {
+        display: flex;
+        flex-direction: column;
+        margin-top: 3px;
+        margin-left: 5px;
+        margin-bottom: -10px;
+      }
+
+      .error-password {
+        /* margin-top: 2px; */
+        color: firebrick;
+        font-size: 14px;
+      }
+
+      /* .forgot_pass {
+        margin-top: -24px;
+        margin-right: 5px;
+      }
+
+      .forgot_pass a {
+        font-size: 14px;
+        text-decoration: none;
+        color: #0e9272;
+      }
+
+      .forgot_pass a:hover {
+        text-decoration: underline;
+      } */
+
       .message-container {
         width: 100%;
-        margin-bottom: 20px;
+        margin-bottom: 2px;
         text-align: center;
       }
 
       .message-container .error-message {
         color: firebrick;
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 600;
-        background-color: #f8d7da;
-        padding: 10px;
-        border-radius: 5px;
-        border: 1px solid #f5c6cb;
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
       }
 
       .message-container .info-message {
         color: #20a057;
         font-size: 15px;
         font-weight: 600;
-        background-color: #d1ecf1;
-        padding: 10px;
-        border-radius: 5px;
-        border: 1px solid #bee5eb;
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
       }
 
       #message-container {
@@ -229,6 +275,7 @@
         border-radius: 5px;
         width: 100%;
         cursor: pointer;
+        margin: 20px 0;
 
         color: #333;
         font-size: 16px;
@@ -369,44 +416,62 @@
         <form method="POST">
           {% csrf_token %}
           <div class="login-form-body">
+        
             <div class="input-group">
-              <input type="email" required name="email" autocomplete="off" />
+              {{ form.email }}
               <span></span>
               <label>Email <span class="asterisk">*</span></label>
             </div>
-
+            {% for error in form.email.errors %}
+              <div class="error-text">{{ error }}</div>
+            {% endfor %}
+            <!-- <div class="error-text">invalid email</div> -->
+        
             <div class="input-group">
-              <input
-                type="password"
-                id="password"
-                required
-                name="password"
-                autocomplete="off"
-              />
+              {{ form.password }}
               <span></span>
               <label>Password <span class="asterisk">*</span></label>
-              <i
-                id="toggle-password"
-                class="material-icons"
-                style="cursor: pointer"
-                >visibility_off</i
-              >
-            </div>
+              <i id="toggle-password" class="material-icons" style="cursor: pointer">visibility_off</i>
+            </div> 
+            <!-- {% for error in form.password.errors %}
+              <div class="error-password">{{ error }}</div>
+            {% endfor %}
+        
+            {% if form.non_field_errors %}
+              <div class="error-text">{{ form.non_field_errors }}</div>
+            {% endif %}
 
+            <div class="forgot_pass">
+              <a href="{% url 'forgot-password' %}">Forgot password?</a>
+            </div> -->
+            <div class="form-row">
+              <div class="error-container">
+                {% for error in form.password.errors %}
+                  <div class="error-password">{{ error }}</div>
+                {% endfor %}
+              </div>
+
+              <!-- <div class="error-container">
+                
+                  <div class="error-password">invalid password</div>
+                
+              </div> -->
+            
+              <!-- <div class="forgot_pass">
+                <a href="{% url 'forgot-password' %}">Forgot password?</a>
+              </div> -->
+            </div>
+            
             <input type="submit" class="btn" value="Login" />
-
-            <hr class="hr" />
-            <div class="or">
-              <p>OR</p>
-            </div>
-
+            <hr class="hr" /> 
+            <div class="or"><p>OR</p></div>
+        
             <div class="d-flex">
-              <br />
               <a href="{% provider_login_url 'google' %}">
                 <button type="button" class="login-with-google-btn">
                   <b>Continue with Google</b>
-                </button></a
-              >
+                </button>
+              </a>
             </div>
           </div>
         </form>
@@ -452,6 +517,12 @@
           }, 5000);
         }
       });
+    </script>
+
+    <script>
+      if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
+      }
     </script>
   </body>
 </html>

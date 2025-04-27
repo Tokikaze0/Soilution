@@ -20,6 +20,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+ACCOUNT_ADAPTER = 'detector.adapter.CustomAccountAdapter'
 SOCIALACCOUNT_ADAPTER = 'detector.adapter.CustomSocialAccountAdapter'  # Replace with your actual app name
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_CLIENT_ID')
@@ -28,6 +29,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,6 +43,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -53,7 +56,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'detector.middleware.InactiveUserMiddleware',
+
 ]
+
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000']
+
 
 ROOT_URLCONF = 'soilution.urls'
 
@@ -72,12 +80,15 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'detector.context_processors.recent_messages',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'soilution.wsgi.application'
+
+ASGI_APPLICATION = 'soilution.asgi.application'
 
 
 # Database
@@ -100,11 +111,11 @@ DATABASES = {
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 # Set a reasonable session timeout (default is 300 seconds, 5 minutes)
-SESSION_COOKIE_AGE = 3600  # 1 hour for example
+# SESSION_COOKIE_AGE = 3600  # 1 hour for example
 
 # Ensure the session cookie is marked as HttpOnly and Secure (if applicable)
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = False  # Set to True in production when using HTTPS
+# SESSION_COOKIE_HTTPONLY = True
+# SESSION_COOKIE_SECURE = False  # Set to True in production when using HTTPS
 
 # CSRF_COOKIE_SECURE = False
 
@@ -158,6 +169,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 # AUTH_USER_MODEL = 'detector.CustomUser' 
 
@@ -214,3 +231,4 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')
 
 SUPABASE_URL = os.environ.get('SUPABASE_URL')
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
+

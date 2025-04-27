@@ -177,6 +177,21 @@
       #profile-dropdown {
         border: 1px solid #aaa;
       }
+
+      @keyframes fade-in-down {
+        0% {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .animate-fade-in-down {
+        animation: fade-in-down 0.3s ease-out;
+      }
     </style>
   </head>
   <body class="bg-white-100">
@@ -235,7 +250,7 @@
             </li>
             <li>
               <a
-                href="{% url 'account_settings' %}"
+                href="{% url 'account_settings' %}?next={{ request.path }}"
                 class="block px-4 py-2 hover:bg-gray-200"
                 >Account settings</a
               >
@@ -257,7 +272,7 @@
 
     <!-- Content Section -->
     <div class="max-w-6xl mx-auto mt-6 mb-12">
-      <h2 class="mb-3 overview">Overview</h2>
+      <h2 class="text-3xl font-bold mb-3 overview">Overview</h2>
       <h5 class="text-lg font-semibold mb-3">Workspace</h5>
 
       <div class="flex items-center gap-2 mb-4">
@@ -296,7 +311,7 @@
             class="group bg-white shadow p-4 rounded-lg transition duration-300 border border-gray-300 hover:border-gray-400 hover:bg-gray-200 h-[130px] cursor-pointer project-item flex flex-col justify-between relative"
             data-id="{{ workspace.id }}"
           >
-            <h6 class="font-semibold text-lg project-name">
+            <h6 class="font-semibold text-lg project-name truncate w-60">
               {{ workspace.name }}
             </h6>
             <p
@@ -347,15 +362,15 @@
       </div>
     </div>
 
-    <!-- Loader -->
+    <!-- Preloader -->
     <div
       id="loader"
-      class="hidden absolute inset-0 flex items-center justify-center bg-opacity-50 bg-white-900 z-10"
+      class="hidden fixed inset-0 flex items-center justify-center bg-opacity-70 bg-white z-50"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 200 200"
-        class="w-16 h-16 animate-spin"
+        class="w-20 h-20 animate-spin"
       >
         <radialGradient
           id="a9"
@@ -471,21 +486,36 @@
     </div>
 
     <script>
-      // Toggle Profile Dropdown
+      function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("w-20");
+      }
+    
       const profileButton = document.getElementById("profile-button");
       const profileDropdown = document.getElementById("profile-dropdown");
-
+    
       profileButton.addEventListener("click", () => {
-        profileDropdown.classList.toggle("hidden");
-      });
-
-      // Close dropdown if clicked outside (optional)
-      document.addEventListener("click", (event) => {
-        if (!profileButton.contains(event.target)) {
+        if (profileDropdown.classList.contains("hidden")) {
+          profileDropdown.classList.remove("hidden");
+          profileDropdown.classList.add("animate-fade-in-down");
+    
+          // Remove animation class after it's done to allow re-adding it later
+          setTimeout(() => {
+            profileDropdown.classList.remove("animate-fade-in-down");
+          }, 300);
+        } else {
           profileDropdown.classList.add("hidden");
         }
       });
-    </script>
+    
+      document.addEventListener("click", (event) => {
+        if (
+          !profileButton.contains(event.target) &&
+          !profileDropdown.contains(event.target)
+        ) {
+          profileDropdown.classList.add("hidden");
+        }
+      });
+    </script>    
 
     <script>
       $(document).ready(function () {
@@ -539,7 +569,7 @@
 
                 // Dynamically add the new workspace to the list
                 let newWorkspace = `
-                  <a href="{% url 'dashboard' %}">
+                  <a href="{% url 'dashboard' %}?workspace=${response.workspace.id}">
                     <div
                       class="group bg-white shadow p-4 rounded-lg transition duration-300 border border-gray-300 hover:border-gray-400 hover:bg-gray-200 h-[130px] cursor-pointer project-item flex flex-col justify-between relative"
                       data-id="${response.workspace.id}" data-created-at="${response.workspace.created_at}"
@@ -675,6 +705,29 @@
           noResultsMessage.classList.add("hidden");
         }
       }
+    </script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const loader = document.getElementById("loader");
+        const sidebarLinks = document.querySelectorAll("#projectList a"); 
+
+        sidebarLinks.forEach(link => {
+          link.addEventListener("click", () => {
+            loader.classList.remove("hidden"); // Show the preloader
+          });
+        });
+      });
+    </script>
+
+    <script>
+      window.addEventListener("pageshow", function (event) {
+        // Always hide the loader when coming back to this page
+        const loader = document.getElementById("loader");
+        if (loader) {
+          loader.classList.add("hidden");
+        }
+      });
     </script>
   </body>
 </html>

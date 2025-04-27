@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% load static %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=check_circle"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/png" href="{% static 'images/sll2.png' %}" />
+    <title>Customer Support</title>
+  </head>
+  <style>
+    html {
+      height: 100%;
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      padding: 0 15px;
+      opacity: 1;
+      transition: opacity 1s ease;
+    }
+
+    .navbar {
+      position: absolute;
+      top: 0;
+      left: -0.2rem;
+      width: 100%;
+      margin: 0;
+      padding: 1rem 4rem;
+      /* background-color: transparent; */
+      transition: background-color 0.3s ease-in-out;
+    }
+
+    .navbar-nav .nav-item .nav-link {
+      color: #2bdf78 !important;
+      padding: 0.8rem 1.2rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      transition: color 0.3s ease, background-color 0.3s ease;
+    }
+
+    .navbar-nav .nav-item .nav-link:hover,
+    .navbar-nav .nav-item .nav-link.active {
+      color: #2bdf78 !important;
+      transition: background-color 0.3s ease-in-out;
+    }
+
+    .navbar-nav .nav-item .nav-link.active {
+      color: #2bdf78 !important;
+      position: relative;
+    }
+
+    .navbar-nav .nav-item .nav-link.active::after {
+      content: "";
+      position: absolute;
+      width: 28%;
+      left: 25%;
+      bottom: 8px;
+      border-bottom: 2px solid #2bdf78;
+    }
+
+    .navbar .nav-item img {
+      border: 2px solid #fff;
+      background-color: #ddd;
+    }
+
+    .navbar .dropdown-menu {
+      border-radius: 0.375rem;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      right: 10rem;
+    }
+
+    .navbar-collapse {
+      justify-content: flex-end;
+    }
+  </style>
+  <body>
+    <div class="container" id="home">
+      <nav
+        class="navbar navbar-expand-lg navbar-light"
+        id="navbar"
+        style="transition: background-color 0.3s ease-in-out"
+      >
+        <a class="navbar-brand" href="{% url 'index' %}"
+          ><img
+            src="{% static 'images/sl.png' %}"
+            alt="logo"
+            width="65px"
+            height="50px"
+        /></a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <img
+            src="{% static 'images/hamburger.png' %}"
+            alt="hamburger icon"
+            class="custom-toggler-icon"
+          />
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a
+                class="nav-link {% if request.path == '/' %}active{% endif %}"
+                href="{% url 'index' %}"
+                >Home</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'about' %}">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'services' %}">Services</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'login' %}">Sign in</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <div class="min-h-screen flex items-center justify-center px-4 py-12 pt-[7rem]">
+        <div class="bg-white w-full max-w-2xl p-8">
+          <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Contact Us</h2>
+            <p class="text-gray-500">
+              We’re excited you want to learn more about Soilution!
+            </p>
+          </div>
+
+          {% if messages %} {% for message in messages %}
+          <div
+            class="mb-4 px-4 py-3 rounded border {% if message.tags == 'success' %} border-green-400 bg-green-50 text-green-800 {% else %} border-red-400 bg-red-50 text-red-800 {% endif %}"
+          >
+            {{ message }}
+          </div>
+          {% endfor %} {% endif %}
+
+          <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Your Name</label
+              >
+              <input
+                type="text"
+                name="name"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-400 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Your Email</label
+              >
+              <input
+                type="email"
+                name="email"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-400 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Subject</label
+              >
+              <input
+                type="text"
+                name="subject"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-400 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Message</label
+              >
+              <textarea
+                name="message"
+                rows="6"
+                required
+                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-400 focus:outline-none resize-none"
+              ></textarea>
+            </div>
+
+            <div class="flex justify-end">
+              <button
+                type="submit"
+                class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-md shadow-md transition duration-200"
+              >
+                Send Message
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

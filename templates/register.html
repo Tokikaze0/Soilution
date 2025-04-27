@@ -215,6 +215,12 @@
         transition: opacity 1s ease-out;
       }
 
+      .error {
+        color: red;
+        font-size: 0.9rem;
+        margin-top: 4px;
+      }
+
       .login-with-google-btn {
         position: relative;
         top: -15px;
@@ -371,12 +377,16 @@
             required
             name="first_name"
             id="first_name"
+            value="{{ form.first_name.value|default:'' }}"
             autocomplete="off"
           />
           <span></span>
           <label for="first_name"
             >First Name <span class="asterisk">*</span></label
           >
+          {% if form.first_name.errors %}
+            <div class="error">{{ form.first_name.errors.0 }}</div>
+          {% endif %}
         </div>
 
         <div class="input-group">
@@ -385,12 +395,16 @@
             required
             name="last_name"
             id="last_name"
+            value="{{ form.last_name.value|default:'' }}"
             autocomplete="off"
           />
           <span></span>
           <label for="last_name"
             >Last Name <span class="asterisk">*</span></label
           >
+          {% if form.last_name.errors %}
+            <div class="error">{{ form.last_name.errors.0 }}</div>
+          {% endif %}
         </div>
 
         <div class="input-group">
@@ -399,10 +413,14 @@
             required
             name="username"
             id="username"
+            value="{{ form.username.value|default:'' }}"
             autocomplete="off"
           />
           <span></span>
           <label for="username">Username <span class="asterisk">*</span></label>
+          {% if form.username.errors %}
+            <div class="error">{{ form.username.errors.0 }}</div>
+          {% endif %}
         </div>
 
         <div class="input-group">
@@ -411,12 +429,16 @@
             required
             name="email"
             id="email"
+            value="{{ form.email.value|default:'' }}"
             autocomplete="off"
           />
           <span></span>
           <label for="email"
             >Email Address <span class="asterisk">*</span></label
           >
+          {% if form.email.errors %}
+            <div class="error">{{ form.email.errors.0 }}</div>
+          {% endif %}
         </div>
 
         <div class="input-group">
@@ -425,6 +447,7 @@
             required
             name="password"
             id="password"
+            value="{{ form.password.value|default:'' }}"
             autocomplete="off"
           />
           <span></span>
@@ -432,6 +455,9 @@
           <i id="toggle-password" class="material-icons" style="cursor: pointer"
             >visibility_off</i
           >
+          {% if form.password.errors %}
+            <div class="error">{{ form.password.errors.0 }}</div>
+          {% endif %}
         </div>
 
         <input type="submit" value="Sign Up" id="btn" />
@@ -483,6 +509,12 @@
           }, 5000);
         }
       });
+    </script>
+
+    <script>
+      if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
+      }
     </script>
   </body>
 </html>

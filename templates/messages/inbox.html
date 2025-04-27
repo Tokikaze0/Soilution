@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inbox</title>
+</head>
+<body>
+    <div class="p-4 max-w-2xl mx-auto bg-white rounded shadow">
+        <h2 class="text-xl font-semibold mb-4">Your Conversation with Admin</h2>
+        <div class="space-y-4 max-h-[400px] overflow-y-scroll">
+          {% for msg in messages %}
+            <div class="{% if msg.sender == request.user %}text-right{% endif %}">
+              <p class="bg-gray-100 inline-block px-4 py-2 rounded-lg max-w-xs">
+                {{ msg.content }}
+              </p>
+              <p class="text-xs text-gray-500">
+                {{ msg.timestamp|date:"H:i - M d" }}
+              </p>
+            </div>
+          {% endfor %}
+        </div>
+        <form method="post" class="mt-4">
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">
+            Send
+          </button>
+        </form>
+    </div>
+</body>
+</html>

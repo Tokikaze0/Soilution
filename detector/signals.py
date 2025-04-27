@@ -1,7 +1,9 @@
 from allauth.socialaccount.models import SocialAccount
 from PIL import Image, ImageDraw, ImageFont
 from django.db.models.signals import post_save
+from django.db.models.signals import pre_save
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.dispatch import receiver
 from supabase import create_client
 from django.conf import settings
@@ -94,3 +96,30 @@ def create_user_profile(sender, instance, created, **kwargs):
         else:
             # Handle error or unexpected response
             print(f"Error: {response}")
+
+# @receiver(post_save, sender=User)
+# def notify_user_approved(sender, instance, created, **kwargs):
+#     if not created and instance.is_active:
+#         # Assuming they weren't active before, to avoid repeat notifications
+#         if instance._previous_is_active is False:
+#             subject = "Your account has been approved!"
+#             message = f"""
+#                 Hi {instance.first_name},
+
+#                 Good news! Your account has been approved by the admin. You can now log in using your email and password.
+
+#                 Login here: http://localhost:8000/login
+
+#                 Thanks,
+#                 The Team
+#                 """
+#             send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [instance.email])
+
+# @receiver(pre_save, sender=User)
+# def store_previous_is_active(sender, instance, **kwargs):
+#     if instance.pk:
+#         previous = User.objects.get(pk=instance.pk)
+#         instance._previous_is_active = previous.is_active
+#     else:
+#         instance._previous_is_active = None
+

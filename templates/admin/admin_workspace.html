@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% load static %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Soilution | Workspace</title>
+    <link rel="icon" type="image/png" href="{% static 'images/sll2.png' %}" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script
+      src="https://kit.fontawesome.com/a076d05399.js"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+      integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <style>
+      .btn-cw {
+        background: #10ac85;
+        border: 1px solid #10ac85;
+      }
+
+      .btn-cw:hover {
+        border: 1px solid #0d8668;
+      }
+
+      .profile-div {
+        background: #ccc;
+      }
+
+      .overview {
+        font-size: 32px;
+      }
+
+      button[type="submit"],
+      button#closeModal {
+        display: inline-block;
+        width: 48%;
+      }
+
+      .border {
+        border: 1.2px solid #aaa;
+        border-radius: 5px;
+        outline: none;
+      }
+
+      .border:focus {
+        border-color: #0e9272;
+      }
+
+      .new-workspace {
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      .workspace-desc {
+        position: relative;
+        top: -10px;
+        font-size: 15px;
+        color: #6d6c6c;
+        margin-bottom: 30px;
+      }
+
+      .btn-cancel {
+        border: 1px solid #aaa;
+      }
+
+      .btn-cancel:hover {
+        background-color: rgba(0, 0, 0, 0.4);
+        cursor: pointer;
+      }
+
+      .btn-create {
+        background: #0e9272;
+        color: white;
+      }
+
+      .btn-create:hover {
+        background-color: #0d8668;
+        cursor: pointer;
+      }
+
+      .hr {
+        position: absolute;
+        top: 6.8rem;
+        left: 0;
+        width: 100%;
+        border: none;
+        border-top: 1px solid #ccc;
+      }
+
+      #closeModalX:hover {
+        color: black;
+      }
+
+      .alert {
+        position: absolute;
+        right: 20px;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+      }
+
+      .alert-success {
+        background-color: #0e9272;
+        color: white;
+      }
+
+      .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+
+      #noResultsMessage {
+        width: 100%;
+        border: 1px solid #ccc;
+        background: white;
+        padding: 20px 0 20px 20px;
+        color: #504f4f;
+        border-radius: 5px;
+        text-align: left;
+      }
+
+      .noResult {
+        color: black;
+        font-weight: 600;
+      }
+
+      #searchBar {
+        width: 300px;
+      }
+
+      #searchBar:focus {
+        border: 1px solid #ccc;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .wsm {
+        position: absolute;
+        top: 23rem;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50rem;
+        text-align: center;
+      }
+
+      .truncate {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      #workspace-button {
+        transition: background-color 0.3s ease;
+      }
+
+      #workspace-button:hover {
+        background-color: #d1d5db;
+      }
+
+      #workspace-button.active {
+        background-color: #d1d5db;
+      }
+
+      #workspace-dropdown,
+      #profile-dropdown {
+        border: 1px solid #aaa;
+      }
+
+      @keyframes fade-in-down {
+        0% {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .animate-fade-in-down {
+        animation: fade-in-down 0.3s ease-out;
+      }
+    </style>
+  </head>
+  <body class="bg-white-100">
+    <!-- Navbar -->
+    <nav
+      class="bg-white-800 text-black p-1 flex justify-between items-center border-b border-solid border-[#aaa] p-2 pl-0 pr-0"
+    >
+      <div class="flex items-center ml-2">
+        <a
+          href="{% url 'admin_workspace' %}"
+          ><img
+            src="{% static 'images/sl.png' %}"
+            alt="Logo"
+            class="w-12 h-9 mr-4"
+        /></a>
+      </div>
+
+      <!-- Profile Chip with Dropdown -->
+      <div class="relative">
+        <div
+          class="flex items-center space-x-2 text-white p-2 rounded-full cursor-pointer mr-4"
+          id="profile-button"
+        >
+          <!-- Avatar -->
+          <div class="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-300">
+            {% if profile_picture_url %}
+            <img
+              src="{{ profile_picture_url }}"
+              alt="User Avatar"
+              class="w-full h-full object-cover"
+            />
+            {% else %}
+            <span
+              class="w-full h-full flex justify-center items-center bg-gray-500 text-white text-sm"
+            >
+              {{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}
+            </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Dropdown Menu -->
+        <div
+          id="profile-dropdown"
+          class="absolute right-0 hidden bg-white text-black rounded shadow-md w-48 z-10 p-1 mr-2"
+        >
+          <ul class="py-2">
+            <li class="px-4 py-2 text-m text-black-600">
+              <strong>{{ user.first_name }}</strong> <br />
+              <span
+                class="text-sm text-gray-500 truncate"
+                style="max-width: 150px; display: inline-block"
+              >
+                {{ user.email }}
+              </span>
+            </li>
+            <li>
+              <a
+                href="{% url 'account_settings' %}?next={{ request.path }}"
+                class="block px-4 py-2 hover:bg-gray-200"
+                >Account settings</a
+              >
+            </li>
+            <li>
+              <a
+                href="{% url 'logout' %}"
+                class="block px-4 py-2 hover:bg-gray-200"
+                >Log Out</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- message -->
+    <div id="message-container"></div>
+
+    <!-- Sidebar -->
+    <div
+        id="sidebar"
+        class="bg-white text-black w-14 min-h-screen fixed p-4 transition-all duration-300 ease-in-out hover:w-52 group border-r border-solid border-[#aaa] group-hover:bg-white z-[100]"
+    >
+        <nav>
+        <li
+            class="mt-2 mb-2 relative flex items-center space-x-4 text-black group cursor-pointer"
+        >
+            <a
+            href="{% url 'admin_page' %}"
+            class="ml-[-6px] px-2 py-2 flex items-center w-full min-w-[2.2rem] hover:bg-gray-200 rounded space-x-2 active-link {% if request.resolver_match.url_name == 'admin_page' %} bg-gray-200 text-gray-800 font-semibold {% endif %}"
+            ><div class="flex-shrink-0">
+                <img
+                src="{% static 'images/overview.png' %}"
+                alt=""
+                width="18"
+                height="18"
+                />
+            </div>
+            <span
+                class="absolute left-4 opacity-0 group-hover:opacity-100 transition-all"
+            >
+                Overview
+            </span></a
+            >
+        </li>
+
+        <li
+            class="mt-2 mb-2 relative flex items-center space-x-4 text-black group cursor-pointer"
+        >
+            <a
+            href="{% url 'admin_workspace' %}"
+            class="ml-[-6px] px-2 py-2 flex items-center w-full min-w-[2.2rem] hover:bg-gray-200 rounded space-x-2 active-link {% if request.resolver_match.url_name == 'admin_workspace' %} bg-gray-200 text-gray-800 font-semibold {% endif %}"
+            ><div class="flex-shrink-0">
+                <img
+                src="{% static 'images/grid2.png' %}"
+                alt=""
+                width="18"
+                height="18"
+                />
+            </div>
+            <span
+                class="absolute left-4 opacity-0 group-hover:opacity-100 transition-all"
+            >
+                Workspace
+            </span></a
+            >
+        </li>
+
+        <!-- user management -->
+        <li class="mt-2 mb-2 relative flex items-center group cursor-pointer">
+            <div
+            class="ml-[-5px] px-2 py-2 flex items-center w-full min-w-[2.2rem] hover:bg-gray-200 rounded space-x-2 active-link"
+            onclick="toggleSubmenu('submenu2', this)"
+            >
+            <img
+                src="{% static 'images/people3.png' %}"
+                alt=""
+                width="18"
+                height="18"
+            />
+            <span
+                class="absolute left-4 opacity-0 group-hover:opacity-100 transition-all"
+            >
+                Manage_User
+            </span>
+            <!-- Rotating arrow -->
+            <svg
+                class="arrow-icon transform transition-transform duration-300 absolute right-2 scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100"
+                xmlns="http://www.w3.org/2000/svg"
+                height="24px"
+                viewBox="0 -960 960 960"
+                width="24px"
+                fill="#333"
+            >
+                <path
+                d="M480-361q-8 0-15-2.5t-13-8.5L268-556q-11-11-11-28t11-28
+                    q11-11 28-11t28 11l156 156 156-156q11-11 28-11t28 11
+                    q11 11 11 28t-11 28L508-372q-6 6-13 8.5t-15 2.5Z"
+                />
+            </svg>
+            </div>
+        </li>
+
+        <ul
+            id="submenu2"
+            class="ml-[-6px] w-full min-w-[2.2rem] max-h-0 overflow-hidden transition-[max-height] duration-300 ease-in-out {% if request.resolver_match.url_name == 'user_list' %} max-h-[500px] z-[100] {% else %} max-h-0 {% endif %}"
+        >
+            <li
+            class="mt-2 mb-2 relative rounded flex items-center space-x-4 text-black group cursor-pointer {% if request.resolver_match.url_name == 'user_list' %} bg-gray-200 text-gray-800 font-semibold {% endif %}"
+            >
+            <a
+                href="{% url 'user_list' %}"
+                class="ml-[3px] px-2 py-2 flex items-center w-full min-w-[2.2rem] hover:bg-gray-200 rounded space-x-2 active-link"
+            >
+                <img
+                src="{% static 'images/list2.png' %}"
+                alt=""
+                width="14"
+                height="14"
+                />
+                <span
+                class="absolute left-6 opacity-0 group-hover:opacity-100 transition-all"
+                >
+                Account_List
+                </span>
+            </a>
+            </li>
+        </ul>
+        </nav>
+    </div>
+
+    <!-- Content Section -->
+    <div class="max-w-6xl mx-auto mt-6 mb-12">
+      <h2 class="text-3xl font-bold mb-3 overview">Workspace</h2>
+      <!-- <h5 class="text-lg font-semibold mb-3">Workspace</h5> -->
+        <br>
+
+      <div class="flex items-center gap-2 mb-4">
+        <button class="text-white px-4 py-2 rounded btn-cw" id="openModal">
+          New Workspace
+        </button>
+        <div class="relative">
+          <!-- Magnifying Glass Icon -->
+          <i
+            class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            style="font-size: 0.9rem"
+          ></i>
+
+          <!-- Search Bar -->
+          <input
+            type="text"
+            class="border border-gray-300 rounded pl-10 p-2"
+            placeholder="Search for a workspace"
+            id="searchBar"
+            onkeyup="filterProjects()"
+          />
+        </div>
+      </div>
+
+      <div id="noResultsMessage" class="text-center mt-4 hidden">
+        <!-- This message will appear if no results are found -->
+      </div>
+
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        id="projectList"
+      >
+        {% if workspace %} {% for workspace in workspace %}
+        <a href="{% url 'admin_dashboard' %}?workspace={{ workspace.id }}">
+          <div
+            class="group bg-white shadow p-4 rounded-lg transition duration-300 border border-gray-300 hover:border-gray-400 hover:bg-gray-200 h-[130px] cursor-pointer project-item flex flex-col justify-between relative"
+            data-id="{{ workspace.id }}"
+          >
+            <h6 class="font-semibold text-lg project-name truncate w-60">
+              {{ workspace.name }}
+            </h6>
+            <p
+              class="text-gray-500 text-sm mt-2 project-description overflow-hidden overflow-ellipsis whitespace-normal break-words flex-grow max-w-[70%]"
+            >
+              <span id="description">
+                {% if workspace.description %} {{ workspace.description }} {% else %}{% endif %}
+              </span>
+            </p>
+            <span
+              class="absolute top-3 right-5 p-2 text-gray-600 transition-all duration-300 ease-in-out group-hover:text-black group-hover:translate-x-2"
+            >
+              <svg
+                class="arrow-icon transform transition-transform duration-300 ease-in-out"
+                width="28px"
+                height="28px"
+                viewBox="0 0 100 125"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+              >
+                <g>
+                  <path
+                    fill="currentColor"
+                    d="M37.556,29.177c7.853,7.164,15.706,14.327,23.56,21.491c3.564,3.251,8.884-2.038,5.303-5.304
+                    C58.565,38.2,50.712,31.037,42.859,23.873C39.295,20.622,33.976,25.911,37.556,29.177L37.556,29.177z"
+                  />
+                </g>
+                <g>
+                  <path
+                    fill="currentColor"
+                    d="M61.039,45.364c-7.803,7.802-15.605,15.605-23.407,23.408c-3.422,3.423,1.881,8.726,5.304,5.303
+                    c7.802-7.802,15.604-15.604,23.406-23.407C69.765,47.245,64.462,41.941,61.039,45.364L61.039,45.364z"
+                  />
+                </g>
+              </svg>
+            </span>
+          </div>
+        </a>
+        {% endfor %} {% else %}
+        <div class="text-center wsm no-workspace-message">
+          <p class="text-lg font-semibold text-gray-500">
+            Organize your soil management process by creating a workspace to
+            stay productive and on track. Create your workspace now and start
+            managing your soil effectively!
+          </p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Preloader -->
+    <div
+      id="loader"
+      class="hidden fixed inset-0 flex items-center justify-center bg-opacity-70 bg-white z-50"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 200 200"
+        class="w-20 h-20 animate-spin"
+      >
+        <radialGradient
+          id="a9"
+          cx=".66"
+          fx=".66"
+          cy=".3125"
+          fy=".3125"
+          gradientTransform="scale(1.5)"
+        >
+          <stop offset="0" stop-color="#0E9272"></stop>
+          <stop offset=".3" stop-color="#0E9272" stop-opacity=".9"></stop>
+          <stop offset=".6" stop-color="#0E9272" stop-opacity=".6"></stop>
+          <stop offset=".8" stop-color="#0E9272" stop-opacity=".3"></stop>
+          <stop offset="1" stop-color="#0E9272" stop-opacity="0"></stop>
+        </radialGradient>
+        <circle
+          transform-origin="center"
+          fill="none"
+          stroke="url(#a9)"
+          stroke-width="30"
+          stroke-linecap="round"
+          stroke-dasharray="200 1000"
+          stroke-dashoffset="0"
+          cx="100"
+          cy="100"
+          r="70"
+        >
+          <animateTransform
+            type="rotate"
+            attributeName="transform"
+            calcMode="spline"
+            dur="2"
+            values="360;0"
+            keyTimes="0;1"
+            keySplines="0 0 1 1"
+            repeatCount="indefinite"
+          ></animateTransform>
+        </circle>
+        <circle
+          transform-origin="center"
+          fill="none"
+          opacity=".2"
+          stroke="#0E9272"
+          stroke-width="30"
+          stroke-linecap="round"
+          cx="100"
+          cy="100"
+          r="70"
+        ></circle>
+      </svg>
+    </div>
+
+    <!-- Modal -->
+    <div
+      id="projectModal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center"
+    >
+      <div class="bg-white p-6 rounded-lg shadow-lg relative">
+        <button
+          id="closeModalX"
+          class="absolute top-2 right-2 text-2xl text-gray-500"
+        >
+          &times;
+        </button>
+
+        <h1 class="mb-4 new-workspace">New Workspace</h1>
+        <p class="workspace-desc">
+          Workspace organizes your process and makes soil management easier.
+        </p>
+        <hr class="hr" />
+        <form id="projectForm" method="POST" action="{% url 'add_workspace' %}">
+          <label class="mb-1 block">Name</label>
+          <input
+            type="text"
+            id="projectName"
+            name="name"
+            class="border p-2 rounded w-full mb-4"
+            autocomplete="off"
+            required
+          />
+          <label class="mb-1 block"
+            >Description
+            <span class="text-gray-500 text-sm"
+              >(optional | max. of 100 characters)</span
+            ></label
+          >
+          <textarea
+            id="projectDescription"
+            name="description"
+            class="border p-2 rounded w-full mb-2"
+            autocomplete="off"
+          ></textarea>
+          <input
+            type="hidden"
+            name="csrfmiddlewaretoken"
+            value="{{ csrf_token }}"
+          />
+
+          <div class="flex justify-between mt-4">
+            <button
+              type="button"
+              id="closeModal"
+              class="text-black-500 px-4 py-2 rounded btn-cancel"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 rounded mr-2 btn-create">
+              Create
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("w-20");
+      }
+    
+      const profileButton = document.getElementById("profile-button");
+      const profileDropdown = document.getElementById("profile-dropdown");
+    
+      profileButton.addEventListener("click", () => {
+        if (profileDropdown.classList.contains("hidden")) {
+          profileDropdown.classList.remove("hidden");
+          profileDropdown.classList.add("animate-fade-in-down");
+    
+          // Remove animation class after it's done to allow re-adding it later
+          setTimeout(() => {
+            profileDropdown.classList.remove("animate-fade-in-down");
+          }, 300);
+        } else {
+          profileDropdown.classList.add("hidden");
+        }
+      });
+    
+      document.addEventListener("click", (event) => {
+        if (
+          !profileButton.contains(event.target) &&
+          !profileDropdown.contains(event.target)
+        ) {
+          profileDropdown.classList.add("hidden");
+        }
+      });
+    </script>    
+
+    <script>
+      $(document).ready(function () {
+        $("#openModal").click(function () {
+          $("#projectModal").removeClass("hidden");
+          $("#projectName").val("");
+          $("#projectDescription").val("");
+        });
+
+        $("#closeModalX, #closeModal").click(function () {
+          $("#projectModal").addClass("hidden");
+          $("#projectName").val("");
+          $("#projectDescription").val("");
+        });
+
+        $("#projectForm").submit(function (e) {
+          e.preventDefault();
+          let name = $("#projectName").val();
+          let description = $("#projectDescription").val();
+
+          $("#loader").removeClass("hidden");
+
+          $.ajax({
+            type: "POST",
+            url: "{% url 'add_workspace' %}",
+            data: {
+              name: name,
+              description: description,
+              csrfmiddlewaretoken: "{{ csrf_token }}",
+            },
+            success: function (response) {
+              console.log("Success Response:", response);
+              if (response.success) {
+                $("#loader").addClass("hidden");
+                $("#projectModal").addClass("hidden");
+
+                $("#message-container").html(`
+                  <div class="alert alert-success">
+                    ${response.message}
+                  </div>
+                `);
+
+                setTimeout(function () {
+                  $("#message-container").html("");
+                }, 5000);
+
+                // Check if description is empty or null
+                let workspaceDescription = response.workspace.description
+                  ? response.workspace.description
+                  : "";
+
+                // Dynamically add the new workspace to the list
+                let newWorkspace = `
+                  <a href="{% url 'admin_dashboard' %}?workspace=${response.workspace.id}">
+                    <div
+                      class="group bg-white shadow p-4 rounded-lg transition duration-300 border border-gray-300 hover:border-gray-400 hover:bg-gray-200 h-[130px] cursor-pointer project-item flex flex-col justify-between relative"
+                      data-id="${response.workspace.id}" data-created-at="${response.workspace.created_at}"
+                    >
+                      <h6 class="font-semibold text-lg project-name">${response.workspace.name}</h6>
+                      <p class="text-gray-500 text-sm mt-2 project-description overflow-hidden overflow-ellipsis whitespace-normal break-words flex-grow max-w-[70%]">
+                        <span id="description">${workspaceDescription}</span>
+                      </p>
+                      <span class="absolute top-3 right-5 p-2 text-gray-600 transition-all duration-300 ease-in-out group-hover:text-black group-hover:translate-x-2">
+                        <svg class="arrow-icon transform transition-transform duration-300 ease-in-out" width="28px" height="28px" viewBox="0 0 100 125" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                          <g>
+                            <path fill="currentColor" d="M37.556,29.177c7.853,7.164,15.706,14.327,23.56,21.491c3.564,3.251,8.884-2.038,5.303-5.304 C58.565,38.2,50.712,31.037,42.859,23.873C39.295,20.622,33.976,25.911,37.556,29.177L37.556,29.177z"/>
+                          </g>
+                          <g>
+                            <path fill="currentColor" d="M61.039,45.364c-7.803,7.802-15.605,15.605-23.407,23.408c-3.422,3.423,1.881,8.726,5.304,5.303 c7.802-7.802,15.604-15.604,23.406-23.407C69.765,47.245,64.462,41.941,61.039,45.364L61.039,45.364z"/>
+                          </g>
+                        </svg>
+                      </span>
+                    </div>
+                  </a>
+                `;
+
+                $("#projectList").prepend(newWorkspace);
+
+                $(".no-workspace-message").remove();
+
+                let newWorkspaceOption = document.createElement("div");
+                newWorkspaceOption.classList.add("workspace-option");
+                newWorkspaceOption.setAttribute(
+                  "data-name",
+                  response.workspace.name
+                );
+                newWorkspaceOption.textContent = response.workspace.name;
+
+                workspaceDropdown.appendChild(newWorkspaceOption);
+
+                let workspaces = $("#projectList > div").get();
+                workspaces.sort(function (a, b) {
+                  let idA = $(a).data("id");
+                  let idB = $(b).data("id");
+
+                  return idB - idA; // Sort in descending order based on `id`
+                });
+
+                $("#projectList").html(workspaces);
+
+                filterProjects();
+
+                $("#projectName").val("");
+                $("#projectDescription").val("");
+              } else {
+                $("#loader").addClass("hidden");
+                $("#message-container").html(`
+                  <div class="alert alert-danger">
+                    Error creating workspace: Please check your input.
+                  </div>
+                `);
+
+                setTimeout(function () {
+                  $("#message-container").html("");
+                }, 5000);
+              }
+            },
+            error: function (xhr, status, error) {
+              console.log("Error: " + error);
+              $("#loader").addClass("hidden");
+              $("#message-container").html(`
+                <div class="alert alert-danger">
+                  An error occurred while creating the workspace. Please try again.
+                </div>
+              `);
+
+              setTimeout(function () {
+                $("#message-container").html("");
+              }, 5000);
+            },
+          });
+        });
+      });
+    </script>
+
+    <!-- sidebar menu & submenu -->
+    <script>
+      function toggleSubmenu(targetId, parentElement) {
+        const allSubmenus = ["submenu2"]; // Only submenu2 remains
+    
+        allSubmenus.forEach((id) => {
+          const submenu = document.getElementById(id);
+          const parent = submenu.previousElementSibling;
+          const arrow = parent.querySelector(".arrow-icon");
+    
+          if (id === targetId) {
+            const isOpen = submenu.classList.contains("max-h-[500px]");
+    
+            if (isOpen) {
+              submenu.classList.remove("max-h-[500px]");
+              submenu.classList.add("max-h-0");
+              arrow.classList.remove("rotate-180");
+            } else {
+              submenu.classList.remove("max-h-0");
+              submenu.classList.add("max-h-[500px]");
+              arrow.classList.add("rotate-180");
+            }
+          } else {
+            submenu.classList.remove("max-h-[500px]");
+            submenu.classList.add("max-h-0");
+            const otherArrow = parent.querySelector(".arrow-icon");
+            otherArrow?.classList.remove("rotate-180");
+          }
+        });
+      }
+    </script>
+
+    <!-- hide modal-->
+    <script>
+      // Close modal when clicking the X button
+      document
+        .getElementById("closeModalX")
+        .addEventListener("click", function () {
+          document.getElementById("projectModal").classList.add("hidden");
+        });
+
+      // Close modal when clicking the Cancel button
+      document
+        .getElementById("closeModal")
+        .addEventListener("click", function () {
+          document.getElementById("projectModal").classList.add("hidden");
+        });
+    </script>
+
+    <!-- search bar functionality -->
+    <script>
+      function filterProjects() {
+        let query = document.querySelector("#searchBar").value.toLowerCase(); 
+        let workspaces = document.querySelectorAll("#projectList > a"); 
+        let found = false; 
+
+        // Loop through all workspaces
+        workspaces.forEach(function (workspace) {
+          let name = workspace.querySelector("h6").textContent.toLowerCase(); 
+          let description = workspace
+            .querySelector("p")
+            .textContent.toLowerCase(); 
+
+          // Check if name or description contains the search query
+          if (name.includes(query) || description.includes(query)) {
+            workspace.style.display = "block"; 
+            found = true; 
+          } else {
+            workspace.style.display = "none"; 
+          }
+        });
+
+        let noResultsMessage = document.getElementById("noResultsMessage");
+
+        // Show "No results found" message if no match was found and the query is not empty
+        if (!found && query.length > 0) {
+          noResultsMessage.classList.remove("hidden");
+          noResultsMessage.innerHTML = `
+      <span class="noResult">No results found</span> <br> 
+      Your search for "<strong>${query}</strong>" did not return any results.
+    `;
+        } else {
+          // Hide "No results found" message if a match was found or query is empty
+          noResultsMessage.classList.add("hidden");
+        }
+      }
+    </script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const loader = document.getElementById("loader");
+        const sidebarLinks = document.querySelectorAll("#projectList a"); 
+
+        sidebarLinks.forEach(link => {
+          link.addEventListener("click", () => {
+            loader.classList.remove("hidden"); // Show the preloader
+          });
+        });
+      });
+    </script>
+
+    <script>
+      window.addEventListener("pageshow", function (event) {
+        // Always hide the loader when coming back to this page
+        const loader = document.getElementById("loader");
+        if (loader) {
+          loader.classList.add("hidden");
+        }
+      });
+    </script>
+  </body>
+</html>

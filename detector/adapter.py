@@ -1,24 +1,46 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from django.shortcuts import redirect
+from allauth.account.adapter import DefaultAccountAdapter
+from allauth.exceptions import ImmediateHttpResponse
+from django.contrib.auth.models import User 
 from django.contrib.auth import get_user_model
+from django.shortcuts import redirect
+from django.urls import reverse
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
 
     def is_email_taken(self, email):
-        """
-        Return True if the email is already taken by a non-social user.
-        """
         User = get_user_model()
         return User.objects.filter(email=email).exists()
 
     def pre_social_login(self, request, sociallogin):
-        """
-        Handle the logic before a social login is completed.
-        """
-        # If email is already taken, try to log the user in
-        email = sociallogin.user.email
-        if self.is_email_taken(email):
-            # This will log the user in using the existing account if they are found
-            existing_user = get_user_model().objects.get(email=email)
-            sociallogin.user = existing_user  # Link the social login with the existing user
-            return redirect('login')  # Redirect to login page if already linked
+        user = sociallogin.user
+
+        if not user.id:
+            # New social user
+            user.is_active = False
+            # Let the pipeline continue to save the user to DB
+        else:
+            # Existing user
+            if not user.is_active:
+                raise ImmediateHttpResponse(redirect('pending_approval'))
+            
+         # Handle existing email linked to a user
+        if self.is_email_taken(user.email):
+            existing_user = User.objects.get(email=user.email)
+            sociallogin.connect(request, existing_user)
+
+        print("🔐 User is inactive, redirecting to pending_approval")
+
+    def authentication_success_url(self, request):
+        # Only reached if user is active
+        return reverse('workspace')
+
+    def add_message(self, request, level, message_template, message_context=None, extra_tags=''):
+            # Suppress login success messages from django-allauth
+            if "signed in" in message_template.lower():
+                return  # Don't show the default success message
+            super().add_message(request, level, message_template, message_context, extra_tags)
+
+class CustomAccountAdapter(DefaultAccountAdapter):
+    def respond_user_inactive(self, request, user):
+        return redirect('pending_approval')

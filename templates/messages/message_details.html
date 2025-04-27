@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages</title>
+</head>
+<body>
+
+<div class="p-4">
+  <h1 class="text-2xl font-bold mb-2">Message from {{ message.sender.username }}</h1>
+  <p class="text-gray-600 text-sm mb-4">{{ message.timestamp }}</p>
+  <div class="bg-white p-4 rounded shadow">
+    <p>{{ message.content }}</p>
+  </div>
+  <a href="{% url 'admin_dashboard' %}" class="text-green-600 hover:underline mt-4 inline-block">← Back to Dashboard</a>
+</div>
+
+
+</body>
+</html>

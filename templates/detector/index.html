@@ -40,27 +40,14 @@
         background-size: 60% auto;
         background-position: calc(100% + 15%) calc(50% + 10%);
         background-repeat: no-repeat;
-        /* background-position: top; */
         margin: 0;
         display: flex;
         flex-direction: column;
         height: 100vh;
       }
 
-      /* body::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: -1;
-      } */
-
       .material-symbols-outlined {
         font-size: 2rem;
-        /* color: #faba0c; #2bdf78 */
         color: #2bdf78;
         margin-right: 10px;
         margin-top: 0;
@@ -955,7 +942,7 @@
           <h3>Customer Support</h3>
           <p>
             Email:
-            <a href="#">soilution42@gmail.com</a>
+            <a href="{% url 'contact_support' %}">soilution42@gmail.com</a>
           </p>
           <p>Phone: <a href="#">+63 9784 324 5766</a></p>
         </div>
