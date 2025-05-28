@@ -345,7 +345,7 @@
       <!-- Sidebar -->
       <div
         id="sidebar"
-        class="bg-white text-black w-14 min-h-screen fixed mt-[4.08rem] p-4 transition-all duration-300 ease-in-out hover:w-52 group border-r border-solid border-[#aaa] group-hover:bg-white z=100"
+        class="bg-white text-black w-14 min-h-screen fixed mt-[4.08rem] p-4 transition-all duration-300 ease-in-out hover:w-52 group border-r border-solid border-[#aaa] group-hover:bg-white z-50"
       >
         <nav>
           <ul>
@@ -354,14 +354,16 @@
             >
               <a
                 href="{% url 'workspace' %}"
-                class="ml-[-6px] px-2 py-2 flex items-center w-full min-w-[2.2rem] hover:bg-gray-200 rounded space-x-2"
+                class="ml-[-6px] px-2 py-2 flex items-center w-full min-w-[2.2rem] space-x-2 rounded hover:bg-gray-200"
               >
-                <img
-                  src="{% static 'images/left-arrow.png' %}"
-                  alt=""
-                  width="12"
-                  height="14"
-                />
+                <div class="flex-shrink-0">
+                  <img
+                    src="{% static 'images/left-arrow.png' %}"
+                    alt=""
+                    width="12"
+                    height="14"
+                  />
+                </div>
                 <span
                   class="absolute left-4 text-gray-400 text-sm opacity-0 group-hover:opacity-100 transition-all"
                 >
@@ -372,7 +374,9 @@
             <li
               class="mt-2 mb-2 relative flex items-center space-x-4 text-black group cursor-pointer"
             >
-              <a href="{% url 'dashboard' %}" class="ml-[-6px] px-2 py-2 flex items-center w-full min-w-[2.2rem] hover:bg-gray-200 rounded space-x-2 active-link {% if request.resolver_match.url_name == 'dashboard' %} bg-gray-200 text-gray-800 font-semibold {% endif %}"
+              <a
+                href="{% url 'dashboard' %}"
+                class="ml-[-6px] px-2 py-2 flex items-center w-full min-w-[2.2rem] space-x-2 rounded hover:bg-gray-200"
                 ><div class="flex-shrink-0">
                   <img
                     src="{% static 'images/dashboard.png' %}"
@@ -380,7 +384,8 @@
                     width="18"
                     height="18"
                   />
-                </div><span
+                </div>
+                <span
                   class="absolute left-4 opacity-0 group-hover:opacity-100 transition-all"
                 >
                   Dashboard
@@ -390,59 +395,40 @@
             <li
               class="mt-2 mb-2 relative flex items-center space-x-4 text-black group cursor-pointer"
             >
-              <a href="{% url 'insights' %}" class="ml-[-6px] px-2 py-2 flex items-center w-full min-w-[2.2rem] hover:bg-gray-200 rounded space-x-2 active-link">
-                <img
-                  src="{% static 'images/chart-up.png' %}"
-                  alt=""
-                  width="18"
-                  height="18"
-                />
-                <span class="absolute left-4 opacity-0 group-hover:opacity-100 transition-all">
-                  Insight
-                </span>
-              </a>
-            </li>
-            <li
-              class="mt-2 mb-2 relative flex items-center space-x-4 text-black group cursor-pointer"
-            >
-              <a href="{% url 'crop_details' %}" class="ml-[-6px] px-2 py-2 flex items-center w-full min-w-[2.2rem] hover:bg-gray-200 rounded space-x-2 active-link">
-                <img
-                  src="{% static 'images/info.png' %}"
-                  alt=""
-                  width="18"
-                  height="18"
-                />
-                <span class="absolute left-4 opacity-0 group-hover:opacity-100 transition-all">
-                  Crop_details
-                </span>
-              </a>
-            </li>
-            <li
-              class="mt-2 mb-2 relative flex items-center space-x-4 text-black group cursor-pointer"
-            >
-              <a href="{% url 'logs' %}" class="ml-[-6px] px-2 py-2 flex items-center w-full min-w-[2.2rem] hover:bg-gray-200 rounded space-x-2 active-link"
-                ><img
-                  src="{% static 'images/list.png' %}"
-                  alt=""
-                  width="18"
-                  height="18"
-                /><span
+              <a
+                href="{% url 'crop_details' %}"
+                class="ml-[-6px] px-2 py-2 flex items-center w-full min-w-[2.2rem] space-x-2 rounded hover:bg-gray-200"
+                ><div class="flex-shrink-0">
+                  <img
+                    src="{% static 'images/info.png' %}"
+                    alt=""
+                    width="18"
+                    height="18"
+                  />
+                </div>
+                <span
                   class="absolute left-4 opacity-0 group-hover:opacity-100 transition-all"
                 >
-                  Logs
+                  Crop_details
                 </span></a
               >
             </li>
             <li
               class="mt-2 mb-2 relative flex items-center space-x-4 text-black group cursor-pointer"
             >
-              <a href="{% url 'reports' %}" class="ml-[-6px] px-2 py-2 flex items-center w-full min-w-[2.2rem] hover:bg-gray-200 rounded space-x-2 active-link"
-                ><img
-                  src="{% static 'images/bar-chart.png' %}"
-                  alt=""
-                  width="18"
-                  height="18"
-                /><span class="absolute left-4 opacity-0 group-hover:opacity-100 transition-all"
+              <a
+                href="{% url 'reports' %}"
+                class="ml-[-6px] px-2 py-2 flex items-center w-full min-w-[2.2rem] space-x-2 rounded hover:bg-gray-200 "
+                ><div class="flex-shrink-0">
+                  <img
+                    src="{% static 'images/bar-chart.png' %}"
+                    alt=""
+                    width="18"
+                    height="18"
+                  />
+                </div>
+                <span
+                  class="absolute left-4 opacity-0 group-hover:opacity-100 transition-all"
                   >Reports
                 </span></a
               >
@@ -450,13 +436,19 @@
             <li
               class="mt-2 mb-2 relative flex items-center space-x-4 text-black group cursor-pointer"
             >
-              <a href="{% url 'dashboard_settings' %}" class="ml-[-6px] px-2 py-2 flex items-center w-full min-w-[2.2rem] hover:bg-gray-200 rounded space-x-2 active-link"
-                ><img
-                  src="{% static 'images/settings.png' %}"
-                  alt=""
-                  width="18"
-                  height="18"
-                /><span class="absolute left-4 opacity-0 group-hover:opacity-100 transition-all"
+              <a
+                href="{% url 'dashboard_settings' %}"
+                class="ml-[-6px] px-2 py-2 flex items-center w-full min-w-[2.2rem] hover:bg-gray-200 rounded space-x-2 active-link  {% if request.resolver_match.url_name == 'dashboard_settings' %} bg-gray-200 text-gray-800 font-semibold {% endif %}"
+                ><div class="flex-shrink-0">
+                  <img
+                    src="{% static 'images/settings.png' %}"
+                    alt=""
+                    width="18"
+                    height="18"
+                  />
+                </div>
+                <span
+                  class="absolute left-4 opacity-0 group-hover:opacity-100 transition-all"
                   >Settings
                 </span></a
               >
@@ -475,12 +467,12 @@
           <div>
             <h1 class="text-3xl font-bold">{{ selected_workspace.name|default:"Dashboard" }}</h1>
             <p class="text-sm text-gray-600 mt-4">Date of Analysis</p>
-            <p class="text-lg font-bold">02-12-2025</p>
+            <p class="text-lg font-bold">{% now "m-d-Y" %}</p>
           </div>
           <div class="flex flex-col items-center gap-4 ml-auto">
-            <button class="bg-[#10ac85] text-white px-4 py-2 rounded-md font-semibold hover:bg-[#0d8668] w-[8rem]">
+            {% comment %} <button class="bg-[#10ac85] text-white px-4 py-2 rounded-md font-semibold hover:bg-[#0d8668] w-[8rem]">
                 Detect
-            </button>
+            </button> {% endcomment %}
             <!-- <div class="flex gap-2 mt-3 text-gray-500 mr-[-50px]">
                 <button class="hover:text-black">
                     <i class="fas fa-eye"></i> 
@@ -495,11 +487,8 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mt-6">
           <div class="bg-white p-4 rounded shadow border border-solid border-[#ccc]">
-            <!-- <p class="text-lg font-semibold">Soil Moisture</p>
-            <p class="text-2xl">87.50%</p> -->
-            <!-- <img src="{% static 'images/sea.png' %}" alt="moisture_icon" class="w-12 h-12 object-contain" /> -->
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-lg font-semibold ml-4">Soil Moisture</p>
@@ -509,8 +498,6 @@
             </div>
           </div>
           <div class="bg-white p-4 rounded shadow border border-solid border-[#ccc]">
-            <!-- <p class="text-lg font-semibold">Temperature</p>
-            <p class="text-2xl">32.50°C</p> -->
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-lg font-semibold ml-4">Temperature</p>
@@ -520,8 +507,6 @@
             </div>
           </div>
           <div class="bg-white p-4 rounded shadow border border-solid border-[#ccc]">
-            <!-- <p class="text-lg font-semibold">Humidity</p>
-            <p class="text-2xl">85%</p> -->
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-lg font-semibold ml-4">Humidity</p>
@@ -531,14 +516,42 @@
             </div>
           </div>
           <div class="bg-white p-4 rounded shadow border border-solid border-[#ccc]">
-            <!-- <p class="text-lg font-semibold">pH Level</p>
-            <p class="text-2xl">5.8</p> -->
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-lg font-semibold ml-4">pH Level</p>
                 <p class="text-2xl ml-4">8.5</p>
               </div>
               <img src="{% static 'images/windows.png' %}" alt="windows_icon" class="w-16 h-16 object-contain mr-8" />
+            </div>
+          </div>
+          <!-- Nitrogen Card -->
+          <div class="bg-white p-4 rounded shadow border border-solid border-[#ccc]">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-lg font-semibold ml-4">Nitrogen</p>
+                <p class="text-2xl ml-4">120 mg/kg</p>
+              </div>
+              <img src="{% static 'images/nitrogen.png' %}" alt="nitrogen_icon" class="w-16 h-16 object-contain mr-8" />
+            </div>
+          </div>
+          <!-- Phosphorus Card -->
+          <div class="bg-white p-4 rounded shadow border border-solid border-[#ccc]">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-lg font-semibold ml-4">Phosphorus</p>
+                <p class="text-2xl ml-4">45 mg/kg</p>
+              </div>
+              <img src="{% static 'images/phosphorus.png' %}" alt="phosphorus_icon" class="w-16 h-16 object-contain mr-8" />
+            </div>
+          </div>
+          <!-- Potassium Card -->
+          <div class="bg-white p-4 rounded shadow border border-solid border-[#ccc]">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-lg font-semibold ml-4">Potassium</p>
+                <p class="text-2xl ml-4">80 mg/kg</p>
+              </div>
+              <img src="{% static 'images/potassium.png' %}" alt="potassium_icon" class="w-16 h-16 object-contain mr-8" />
             </div>
           </div>
         </div>
@@ -549,13 +562,6 @@
               class="card mt-12 bg-white border border-gray-300 rounded-lg shadow-lg p-4"
             >
               <h3 class="text-center">Soil Nutrient Levels (NPK)</h3>
-              <canvas id="mergedChart" width="800" height="400"></canvas>
-            </div>
-
-            <div
-              class="card mt-4 bg-white border border-gray-300 rounded-lg shadow-lg p-4"
-            >
-              <h3 class="text-center">Activities</h3>
               <canvas id="mergedChart" width="800" height="400"></canvas>
             </div>
           </div>

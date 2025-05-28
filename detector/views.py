@@ -29,7 +29,6 @@ from .forms import CreateUserForm
 from .forms import UpdateUserForm
 from django.utils.timesince import timesince
 from django.db.models import Max, Count, Q
-from django.views.decorators.csrf import csrf_exempt
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.views.decorators.csrf import csrf_protect
