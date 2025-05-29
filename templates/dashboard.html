@@ -580,34 +580,60 @@
             </div>
           </div>
           <script>
-            // This expects a Django context variable: crop_history
-            // crop_history = [
-            //   {"timestamp": "2024-05-29 10:00", "crop": "Corn"},
-            //   {"timestamp": "2024-05-29 11:00", "crop": "Rice"},
-            //   ...
-            // ]
-            const cropHistoryData = JSON.parse('{{ crop_history_json|escapejs }}');
+            // This expects a Django context variable: crop_history_json
+            let cropHistoryData = [];
+            try {
+              cropHistoryData = JSON.parse('{{ crop_history_json|escapejs }}');
+            } catch (e) {
+              cropHistoryData = [];
+            }
 
-            // Prepare data for the chart
-            const labels = cropHistoryData.map(entry => entry.timestamp);
-            const crops = cropHistoryData.map(entry => entry.crop);
+            // Helper: format timestamp to YYYY-MM-DD
+            function getDay(dateStr) {
+              // Handles both "YYYY-MM-DD HH:MM" and ISO strings
+              return dateStr.split(' ')[0];
+            }
 
-            // Count occurrences of each crop over time for a stacked bar chart
-            const uniqueCrops = [...new Set(crops)];
-            const datasets = uniqueCrops.map(crop => {
-              return {
-                label: crop,
-                data: cropHistoryData.map(entry => entry.crop === crop ? 1 : 0),
-                backgroundColor: '#' + Math.floor(Math.random()*16777215).toString(16), // random color
-                stack: 'cropStack'
-              }
+            // Group data by day and crop
+            const dayCropCounts = {};
+            const uniqueCrops = new Set();
+            cropHistoryData.forEach(entry => {
+              const day = getDay(entry.timestamp);
+              const crop = entry.crop;
+              uniqueCrops.add(crop);
+              if (!dayCropCounts[day]) dayCropCounts[day] = {};
+              if (!dayCropCounts[day][crop]) dayCropCounts[day][crop] = 0;
+              dayCropCounts[day][crop] += 1;
             });
+
+            // Get sorted list of days
+            const days = Object.keys(dayCropCounts).sort();
+
+            // Get sorted list of crops
+            const crops = Array.from(uniqueCrops).sort();
+
+            // Prepare datasets: for each crop, array of counts per day
+            // Use a fixed color palette for consistency
+            const colorPalette = [
+              "#4dc9f6", "#f67019", "#f53794", "#537bc4", "#acc236",
+              "#166a8f", "#00a950", "#58595b", "#8549ba", "#e6194b",
+              "#3cb44b", "#ffe119", "#4363d8", "#f58231", "#911eb4",
+              "#46f0f0", "#f032e6", "#bcf60c", "#fabebe", "#008080",
+              "#e6beff", "#9a6324", "#fffac8"
+            ];
+
+            const datasets = crops.map((crop, idx) => ({
+              label: crop,
+              data: days.map(day => dayCropCounts[day][crop] || 0),
+              backgroundColor: colorPalette[idx % colorPalette.length],
+              stack: 'cropStack'
+            }));
 
             const ctx = document.getElementById('cropHistoryChart').getContext('2d');
             new Chart(ctx, {
               type: 'bar',
               data: {
-                labels: labels,
+                labels: days,
                 datasets: datasets
               },
               options: {
@@ -616,11 +642,11 @@
                   legend: { position: 'top' },
                   title: {
                     display: true,
-                    text: 'Crop Recommendation History'
+                    text: 'Crop Recommendation History (per Day)'
                   }
                 },
                 scales: {
-                  x: { stacked: true },
+                  x: { stacked: true, title: { display: true, text: 'Day' } },
                   y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Recommendation Count' } }
                 }
               }

@@ -42,6 +42,8 @@ from tensorflow import keras
 import numpy as np
 import os
 import joblib
+from django.utils.dateformat import DateFormat
+from django.utils.formats import get_format
 
 
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
@@ -162,12 +164,154 @@ def crop_details(request):
         selected_workspace = user_workspaces.first()
         if selected_workspace:
             request.session['selected_workspace_id'] = selected_workspace.id
+            
+    crop_details = {
+        'apple': {
+            'description': 'Apples thrive in cold, temperate regions.',
+            'climate': 'Temperate',
+            'soil': 'Well-drained loamy soil',
+            'harvest_time': 'Late summer to early fall'
+        },
+        'banana': {
+            'description': 'Bananas grow best in humid, tropical regions.',
+            'climate': 'Tropical',
+            'soil': 'Rich, well-drained loamy soil',
+            'harvest_time': 'Year-round in tropical zones'
+        },
+        'Munggo': {
+            'description': 'A pulse crop rich in protein.',
+            'climate': 'Warm, semi-arid',
+            'soil': 'Loamy or sandy loam',
+            'harvest_time': '90–120 days after sowing'
+        },
+        'chickpea': {
+            'description': 'Popular legume grown in cool, dry climates.',
+            'climate': 'Cool and dry',
+            'soil': 'Well-drained sandy loam',
+            'harvest_time': '100–110 days after sowing'
+        },
+        'coconut': {
+            'description': 'Perennial tropical crop for oil and water.',
+            'climate': 'Tropical, high humidity',
+            'soil': 'Sandy loam or coastal alluvial',
+            'harvest_time': 'Every 45–60 days once matured'
+        },
+        'coffee': {
+            'description': 'Popular beverage crop grown in shade.',
+            'climate': 'Subtropical with rain',
+            'soil': 'Rich, well-drained volcanic or loam',
+            'harvest_time': '7–9 months after flowering'
+        },
+        'cotton': {
+            'description': 'Fiber crop requiring dry climate.',
+            'climate': 'Warm, dry',
+            'soil': 'Black soil, alluvial',
+            'harvest_time': '150–180 days after planting'
+        },
+        'grapes': {
+            'description': 'Grown for wine, juice, and consumption.',
+            'climate': 'Temperate to warm',
+            'soil': 'Sandy loam with good drainage',
+            'harvest_time': 'Late summer to early fall'
+        },
+        'dyut': {
+            'description': 'Bast fiber crop used for textiles.',
+            'climate': 'Warm and humid',
+            'soil': 'Alluvial, loamy',
+            'harvest_time': '100–120 days after sowing'
+        },
+        'kidneybeans': {
+            'description': 'Protein-rich legume often used in soups and stews.',
+            'climate': 'Warm',
+            'soil': 'Loamy, well-drained',
+            'harvest_time': '90–120 days'
+        },
+        'monggo': {
+            'description': 'Cool-season legume used in dal and soups.',
+            'climate': 'Cool and dry',
+            'soil': 'Sandy loam to clay loam',
+            'harvest_time': '110–120 days after sowing'
+        },
+        'mais': {
+            'description': 'Widely grown cereal crop.',
+            'climate': 'Warm and sunny',
+            'soil': 'Fertile loam with good moisture',
+            'harvest_time': '90–100 days'
+        },
+        'mango': {
+            'description': 'Tropical fruit known as the "king of fruits."',
+            'climate': 'Tropical and subtropical',
+            'soil': 'Well-drained loamy soil',
+            'harvest_time': 'Late spring to summer'
+        },
+        'mothbeans': {
+            'description': 'Drought-resistant legume grown in dry areas.',
+            'climate': 'Hot and dry',
+            'soil': 'Sandy or loamy soil',
+            'harvest_time': '70–90 days'
+        },
+        'mungbean': {
+            'description': 'Commonly used pulse, green gram.',
+            'climate': 'Warm and humid',
+            'soil': 'Loamy soil',
+            'harvest_time': '60–70 days'
+        },
+        'muskmelon': {
+            'description': 'Sweet, juicy melon grown in summer.',
+            'climate': 'Warm, dry',
+            'soil': 'Sandy loam',
+            'harvest_time': '75–100 days'
+        },
+        'orange': {
+            'description': 'Citrus fruit rich in vitamin C.',
+            'climate': 'Subtropical to tropical',
+            'soil': 'Well-drained sandy loam',
+            'harvest_time': 'Winter to early spring'
+        },
+        'papaya': {
+            'description': 'Fast-growing tropical fruit.',
+            'climate': 'Tropical and subtropical',
+            'soil': 'Well-drained loamy soil',
+            'harvest_time': '6–9 months after planting'
+        },
+        'pigeonpeas': {
+            'description': 'Perennial legume for food and fodder.',
+            'climate': 'Semi-arid',
+            'soil': 'Sandy loam or black soil',
+            'harvest_time': '150–200 days'
+        },
+        'pomegranate': {
+            'description': 'Drought-resistant fruit crop.',
+            'climate': 'Hot, dry summers and cool winters',
+            'soil': 'Loamy or alluvial soil',
+            'harvest_time': '5–7 months after flowering'
+        },
+        'rice': {
+            'description': 'Staple cereal crop for billions.',
+            'climate': 'Warm, wet (monsoon)',
+            'soil': 'Clayey, loamy',
+            'harvest_time': '100–180 days, varies by variety'
+        },
+        'watermelon': {
+            'description': 'Juicy summer fruit with high water content.',
+            'climate': 'Warm and dry',
+            'soil': 'Sandy loam, well-drained',
+            'harvest_time': '80–100 days'
+        },
+        'wheat': {
+            'description': 'Major cereal crop for flour production.',
+            'climate': 'Cool, dry',
+            'soil': 'Loamy or clay loam',
+            'harvest_time': '120–150 days'
+        }
+    }
 
     context = {
         'profile_picture_url': profile_picture_url,
         'workspace': user_workspaces,
         'selected_workspace': selected_workspace,
         'user': user,
+        'crop_details': crop_details,
     }
 
     return render(request, 'crop_details.html', context)
@@ -222,12 +366,26 @@ def reports(request):
         selected_workspace = user_workspaces.first()
         if selected_workspace:
             request.session['selected_workspace_id'] = selected_workspace.id
+            
+    crop_history = [
+        {"timestamp": "2024-05-22 10:00", "crop": "Corn"},
+        {"timestamp": "2024-05-27 10:00", "crop": "Rice"},
+        {"timestamp": "2024-05-27 12:00", "crop": "Wheat"},
+        {"timestamp": "2024-05-27 12:00", "crop": "Soybean"},
+        {"timestamp": "2024-05-27 14:00", "crop": "Munggo"},
+        {"timestamp": "2024-04-28 15:00", "crop": "Mais"},
+        {"timestamp": "2025-04-28 16:00", "crop": "Banana"},
+        {"timestamp": "2025-05-29 17:00", "crop": "Apple"},
+        {"timestamp": "2025-05-29 17:00", "crop": "Apple"},
+        {"timestamp": "2025-05-29 19:00", "crop": "Grapes"},
+    ]
 
     context = {
         'profile_picture_url': profile_picture_url,
         'workspace': user_workspaces,
         'selected_workspace': selected_workspace,
         'user': user,
+        'crop_history_json': json.dumps(crop_history),
     }
 
     return render(request, 'reports.html', context)
@@ -333,12 +491,26 @@ def dashboard(request):
     if not selected_workspace and user_workspaces.exists():
         selected_workspace = user_workspaces.first()
         request.session['selected_workspace_id'] = selected_workspace.id
+        
+    crop_history = [
+        {"timestamp": "2024-05-22 10:00", "crop": "Corn"},
+        {"timestamp": "2024-05-27 10:00", "crop": "Rice"},
+        {"timestamp": "2024-05-27 12:00", "crop": "Wheat"},
+        {"timestamp": "2024-05-27 12:00", "crop": "Soybean"},
+        {"timestamp": "2024-05-27 14:00", "crop": "Munggo"},
+        {"timestamp": "2024-05-28 15:00", "crop": "Mais"},
+        {"timestamp": "2024-05-28 16:00", "crop": "Banana"},
+        {"timestamp": "2024-05-29 17:00", "crop": "Apple"},
+        {"timestamp": "2024-05-29 17:00", "crop": "Apple"},
+        {"timestamp": "2024-05-29 19:00", "crop": "Grapes"},
+    ]
 
     context = {
         'user_profile': profile,
         'workspace': user_workspaces,
         'profile_picture_url': profile_picture_url,
         'selected_workspace': selected_workspace,
+        'crop_history_json': json.dumps(crop_history),
     }
 
     return render(request, 'dashboard.html', context)

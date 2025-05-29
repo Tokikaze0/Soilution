@@ -465,17 +465,128 @@
       <div
         class="flex-1 p-6 mt-16 ml-14 group-hover:ml-52 transition-all duration-300 ease-in-out"
       >
-        <h1>Reports</h1>
-        <p>
-          Generate and view detailed reports for your projects, including
-          progress reports, financial reports, and performance metrics.
-        </p>
-        <ul>
-          <li>Project Reports</li>
-          <li>Financial Reports</li>
-          <li>Performance Reports</li>
-        </ul>
+        <!-- Crop Recommendation History Section -->
+        <div class="mt-8">
+          <h2 class="text-xl font-bold mb-4">Crop Recommendation History</h2>
+          <!-- Filter Controls -->
+          <div class="flex items-center gap-4 mb-4">
+            <label for="filter-type" class="font-semibold">Filter by:</label>
+            <select id="filter-type" class="border rounded p-2">
+              <option value="day">Day</option>
+              <option value="month">Month</option>
+              <option value="year">Year</option>
+            </select>
+            <input type="date" id="filter-day" class="border rounded p-2" style="display:inline;">
+            <input type="month" id="filter-month" class="border rounded p-2" style="display:none;">
+            <input type="number" id="filter-year" class="border rounded p-2" min="2000" max="2100" placeholder="Year" style="display:none;">
+            <button onclick="applyCropFilter()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">Apply</button>
+            <button onclick="exportToExcel()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">Export to Excel</button>
+          </div>
+          <!-- Table for Crop History -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full bg-white border border-gray-300 rounded">
+              <thead>
+                <tr>
+                  <th class="py-2 px-4 border-b">Timestamp</th>
+                  <th class="py-2 px-4 border-b">Crop</th>
+                </tr>
+              </thead>
+              <tbody id="crop-history-table">
+                <!-- Rows will be populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
+
+      <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+      <script>
+        // Parse crop history data from Django context
+        let cropHistoryData = [];
+        try {
+          cropHistoryData = JSON.parse('{{ crop_history_json|escapejs }}');
+        } catch (e) {
+          cropHistoryData = [];
+        }
+
+        // Store the last filtered data for export
+        let lastFilteredData = [];
+
+        // Helper: format date to YYYY-MM-DD, YYYY-MM, or YYYY
+        function formatDate(date, type) {
+          const d = new Date(date);
+          if (type === 'day') return d.toISOString().slice(0, 10);
+          if (type === 'month') return d.toISOString().slice(0, 7);
+          if (type === 'year') return d.getFullYear().toString();
+          return '';
+        }
+
+        // Populate table with filtered data
+        function populateCropTable(filteredData) {
+          lastFilteredData = filteredData; // Save for export
+          const table = document.getElementById('crop-history-table');
+          table.innerHTML = '';
+          if (filteredData.length === 0) {
+            table.innerHTML = '<tr><td colspan="2" class="text-center py-4">No data found.</td></tr>';
+            return;
+          }
+          filteredData.forEach(entry => {
+            table.innerHTML += `
+              <tr>
+                <td class="py-2 px-4 border-b">${entry.timestamp}</td>
+                <td class="py-2 px-4 border-b">${entry.crop}</td>
+              </tr>
+            `;
+          });
+        }
+
+        // Filter logic
+        function applyCropFilter() {
+          const type = document.getElementById('filter-type').value;
+          let filterValue = '';
+          if (type === 'day') filterValue = document.getElementById('filter-day').value;
+          if (type === 'month') filterValue = document.getElementById('filter-month').value;
+          if (type === 'year') filterValue = document.getElementById('filter-year').value;
+          if (!filterValue) {
+            populateCropTable(cropHistoryData);
+            return;
+          }
+          const filtered = cropHistoryData.filter(entry => {
+            const entryDate = formatDate(entry.timestamp, type);
+            return entryDate === filterValue;
+          });
+          populateCropTable(filtered);
+        }
+
+        // Export filtered data to Excel
+        function exportToExcel() {
+          if (!lastFilteredData || lastFilteredData.length === 0) {
+            alert("No data to export.");
+            return;
+          }
+          // Prepare worksheet data
+          const ws_data = [
+            ["Timestamp", "Crop"],
+            ...lastFilteredData.map(entry => [entry.timestamp, entry.crop])
+          ];
+          const ws = XLSX.utils.aoa_to_sheet(ws_data);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "CropHistory");
+          XLSX.writeFile(wb, "crop_recommendation_history.xlsx");
+        }
+
+        // Show/hide filter inputs based on filter type
+        document.getElementById('filter-type').addEventListener('change', function() {
+          document.getElementById('filter-day').style.display = this.value === 'day' ? 'inline' : 'none';
+          document.getElementById('filter-month').style.display = this.value === 'month' ? 'inline' : 'none';
+          document.getElementById('filter-year').style.display = this.value === 'year' ? 'inline' : 'none';
+        });
+
+        // Initial population
+        document.addEventListener('DOMContentLoaded', function() {
+          populateCropTable(cropHistoryData);
+        });
+      </script>
 
       <!-- Preloader -->
       <div
