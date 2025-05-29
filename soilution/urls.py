@@ -69,7 +69,7 @@ urlpatterns = [
     path('users/', views.user_list, name='user_list'),
     # path('users/<int:user_id>/deactivate/', views.deactivate_user, name='deactivate_user'),
     # path('users/<int:user_id>/activate/', views.activate_user, name='activate_user'),
-
+    path('api/esp32-data/', views.esp32_data_api, name='esp32_data_api'),
 ]
 
 if settings.DEBUG:

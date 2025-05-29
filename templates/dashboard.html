@@ -492,7 +492,9 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-lg font-semibold ml-4">Soil Moisture</p>
-                <p class="text-2xl ml-4">87.5%</p>
+                <p class="text-2xl ml-4">
+                  {{ esp32_data.moisture|default:"0" }}%
+                </p>
               </div>
               <img src="{% static 'images/sea.png' %}" alt="moisture_icon" class="w-16 h-16 object-contain mr-8" />
             </div>
@@ -501,7 +503,9 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-lg font-semibold ml-4">Temperature</p>
-                <p class="text-2xl ml-4">32.50°C</p>
+                <p class="text-2xl ml-4">
+                  {{ esp32_data.temperature|default:"0" }}°C
+                </p>
               </div>
               <img src="{% static 'images/thermometer3.png' %}" alt="thermometer_icon" class="w-16 h-16 object-contain mr-8" />
             </div>
@@ -510,7 +514,9 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-lg font-semibold ml-4">Humidity</p>
-                <p class="text-2xl ml-4">85%</p>
+                <p class="text-2xl ml-4">
+                  {{ esp32_data.humidity|default:"0" }}%
+                </p>
               </div>
               <img src="{% static 'images/humidity.png' %}" alt="humidity_icon" class="w-16 h-16 object-contain mr-8" />
             </div>
@@ -519,7 +525,9 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-lg font-semibold ml-4">pH Level</p>
-                <p class="text-2xl ml-4">8.5</p>
+                <p class="text-2xl ml-4">
+                  {{ esp32_data.pH|default:"0" }}
+                </p>
               </div>
               <img src="{% static 'images/windows.png' %}" alt="windows_icon" class="w-16 h-16 object-contain mr-8" />
             </div>
@@ -529,7 +537,9 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-lg font-semibold ml-4">Nitrogen</p>
-                <p class="text-2xl ml-4">120 mg/kg</p>
+                <p class="text-2xl ml-4">
+                  {{ esp32_data.nitrogen|default:"0" }} mg/kg
+                </p>
               </div>
               <img src="{% static 'images/nitrogen.png' %}" alt="nitrogen_icon" class="w-16 h-16 object-contain mr-8" />
             </div>
@@ -539,7 +549,9 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-lg font-semibold ml-4">Phosphorus</p>
-                <p class="text-2xl ml-4">45 mg/kg</p>
+                <p class="text-2xl ml-4">
+                  {{ esp32_data.phosphorus|default:"0" }} mg/kg
+                </p>
               </div>
               <img src="{% static 'images/phosphorus.png' %}" alt="phosphorus_icon" class="w-16 h-16 object-contain mr-8" />
             </div>
@@ -549,7 +561,9 @@
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-lg font-semibold ml-4">Potassium</p>
-                <p class="text-2xl ml-4">80 mg/kg</p>
+                <p class="text-2xl ml-4">
+                  {{ esp32_data.potassium|default:"0" }} mg/kg
+                </p>
               </div>
               <img src="{% static 'images/potassium.png' %}" alt="potassium_icon" class="w-16 h-16 object-contain mr-8" />
             </div>
@@ -561,10 +575,57 @@
             <div
               class="card mt-12 bg-white border border-gray-300 rounded-lg shadow-lg p-4"
             >
-              <h3 class="text-center">Soil Nutrient Levels (NPK)</h3>
-              <canvas id="mergedChart" width="800" height="400"></canvas>
+              <h3 class="text-center">Crop Recommendation History</h3>
+              <canvas id="cropHistoryChart" width="800" height="400"></canvas>
             </div>
           </div>
+          <script>
+            // This expects a Django context variable: crop_history
+            // crop_history = [
+            //   {"timestamp": "2024-05-29 10:00", "crop": "Corn"},
+            //   {"timestamp": "2024-05-29 11:00", "crop": "Rice"},
+            //   ...
+            // ]
+            const cropHistoryData = JSON.parse('{{ crop_history_json|escapejs }}');
+
+            // Prepare data for the chart
+            const labels = cropHistoryData.map(entry => entry.timestamp);
+            const crops = cropHistoryData.map(entry => entry.crop);
+
+            // Count occurrences of each crop over time for a stacked bar chart
+            const uniqueCrops = [...new Set(crops)];
+            const datasets = uniqueCrops.map(crop => {
+              return {
+                label: crop,
+                data: cropHistoryData.map(entry => entry.crop === crop ? 1 : 0),
+                backgroundColor: '#' + Math.floor(Math.random()*16777215).toString(16), // random color
+                stack: 'cropStack'
+              }
+            });
+
+            const ctx = document.getElementById('cropHistoryChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: labels,
+                datasets: datasets
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { position: 'top' },
+                  title: {
+                    display: true,
+                    text: 'Crop Recommendation History'
+                  }
+                },
+                scales: {
+                  x: { stacked: true },
+                  y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Recommendation Count' } }
+                }
+              }
+            });
+          </script>
 
           <div
             class="card dashboard-card mt-12 bg-white border border-gray-300 rounded-lg shadow-lg px-4 flex-grow md:w-3/10"
@@ -576,18 +637,19 @@
             </div>
             <div class="card-body p-4">
               <ul class="space-y-2">
-                <li><strong>Corn</strong> - Best for Nitrogen-rich soils</li>
-                <li>
-                  <strong>Wheat</strong> - Suitable for slightly acidic soils
-                </li>
-                <li><strong>Rice</strong> - Ideal for low-phosphorus soils</li>
+                {% if recommendations %}
+                  {% for rec in recommendations %}
+                    <li>
+                      <strong>{{ rec.crop_name }}</strong>
+                      {% if rec.probability %}
+                        - Probability: {{ rec.probability|floatformat:2 }}
+                      {% endif %}
+                    </li>
+                  {% endfor %}
+                {% else %}
+                  <li>No recommendations available.</li>
+                {% endif %}
               </ul>
-              <a
-                href="#"
-                class="btn bg-[#10ac85] btn-sm text-white absolute mt-6 py-2 px-4 rounded hover:bg-[#0d8668]"
-              >
-                View All Recommendations
-              </a>
             </div>
           </div>
         </div>

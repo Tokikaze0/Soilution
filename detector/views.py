@@ -35,10 +35,28 @@ from django.views.decorators.csrf import csrf_protect
 import time
 from django.contrib.auth.decorators import user_passes_test
 from django.core.mail import EmailMultiAlternatives
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+from tensorflow import keras
+import numpy as np
+import os
+import joblib
+
 
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
 
 channel_layer = get_channel_layer()
+
+APP_DIR = os.path.dirname(__file__)
+MODEL_PATH = os.path.join(APP_DIR, 'ml_models', 'crop_recommendation_model_v3.keras')
+SCALER_PATH = os.path.join(APP_DIR, 'ml_models', 'scaler.pkl')
+crop_model = keras.models.load_model(MODEL_PATH)
+scaler = joblib.load(SCALER_PATH)
+
+crop_labels = ['apple', 'banana', 'blackgram', 'chickpea', 'coconut', 'coffee', 'cotton', 'grapes', 
+               'jute', 'kidneybeans', 'lentil', 'maize', 'mango', 'mothbeans', 'mungbean', 'muskmelon', 
+               'orange', 'papaya', 'pigeonpeas', 'pomegranate', 'rice', 'watermelon', 'wheat']  # Example list
 
 def index(request):
     list(messages.get_messages(request))
@@ -1268,3 +1286,62 @@ def get_admin_users(request):
     
     return JsonResponse({'admins': admin_data})
 
+@csrf_exempt
+def esp32_data_api(request):
+    """
+    API endpoint to receive JSON data from ESP32.
+    Expects a POST request with JSON body containing:
+    moisture, temperature, conductivity, pH, nitrogen, phosphorus, potassium
+    Returns the received data and the top 5 crop recommendations.
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            # Extract fields from the JSON payload
+            moisture = data.get('moisture')
+            temperature = data.get('temperature')
+            conductivity = data.get('conductivity')
+            pH = data.get('pH')
+            nitrogen = data.get('nitrogen')
+            phosphorus = data.get('phosphorus')
+            potassium = data.get('potassium')
+
+            # Prepare input for the model (adjust order as per your model's training)
+            # Example: [N, P, K, temperature, moisture, pH, conductivity]
+            input_data = np.array([[nitrogen, phosphorus, potassium, temperature, moisture, pH, conductivity]], dtype=np.float32)
+
+            # Scale the input if your model expects scaled input
+            input_data_scaled = scaler.transform(input_data)
+
+            # Get prediction probabilities from the model
+            prediction = crop_model.predict(input_data_scaled)
+
+            # Get top 5 predictions
+            top_5_indices = prediction[0].argsort()[-5:][::-1]
+            top_5_crops = [
+                {
+                    "crop_name": crop_labels[i] if i < len(crop_labels) else str(i),
+                    "probability": float(prediction[0][i])
+                }
+                for i in top_5_indices
+            ]
+
+            # Respond with success, echo the received data, and add recommendations
+            return JsonResponse({
+                'status': 'success',
+                'received': {
+                    'moisture': moisture,
+                    'temperature': temperature,
+                    'conductivity': conductivity,
+                    'pH': pH,
+                    'nitrogen': nitrogen,
+                    'phosphorus': phosphorus,
+                    'potassium': potassium,
+                },
+                'recommendations': top_5_crops
+            }, status=201)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Only POST requests are allowed.'}, status=405)
+    

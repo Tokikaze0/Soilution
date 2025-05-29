@@ -24,7 +24,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
             if not user.is_active:
                 raise ImmediateHttpResponse(redirect('pending_approval'))
             
-         # Handle existing email linked to a user
+        # Handle existing email linked to a user
         if self.is_email_taken(user.email):
             existing_user = User.objects.get(email=user.email)
             sociallogin.connect(request, existing_user)
