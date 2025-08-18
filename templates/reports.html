@@ -345,6 +345,8 @@
       </div>
     </nav>
 
+    <!-- Hidden workspace name for export -->
+    <span id="workspace-name" style="display:none;">{{ selected_workspace}}</span>
     <div class="flex flex-1">
       <!-- Sidebar -->
       <div
@@ -487,8 +489,8 @@
             <table class="min-w-full bg-white border border-gray-300 rounded">
               <thead>
                 <tr>
-                  <th class="py-2 px-4 border-b">Timestamp</th>
-                  <th class="py-2 px-4 border-b">Crop</th>
+                  <th class="py-2 px-4 border-b">Date</th>
+                  <th class="py-2 px-4 border-b">Recommended Crop</th>
                 </tr>
               </thead>
               <tbody id="crop-history-table">
@@ -521,6 +523,13 @@
           return '';
         }
 
+        // Helper: format date as "Month DD, YYYY"
+        function formatReadableDate(dateString) {
+          const date = new Date(dateString);
+          // Format as 'Month DD, YYYY' and add a zero-width space to prevent Excel auto-format
+          return '\u200B' + date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' });
+        }
+
         // Populate table with filtered data
         function populateCropTable(filteredData) {
           lastFilteredData = filteredData; // Save for export
@@ -531,9 +540,10 @@
             return;
           }
           filteredData.forEach(entry => {
+            const formattedDate = formatReadableDate(entry.timestamp);
             table.innerHTML += `
               <tr>
-                <td class="py-2 px-4 border-b">${entry.timestamp}</td>
+                <td class="py-2 px-4 border-b">${formattedDate}</td>
                 <td class="py-2 px-4 border-b">${entry.crop}</td>
               </tr>
             `;
@@ -564,12 +574,34 @@
             alert("No data to export.");
             return;
           }
-          // Prepare worksheet data
+          // Prepare worksheet data with title, workplace, as of date, and spacing
+          const workspaceNameElem = document.getElementById('workspace-name');
+          const workplaceName = workspaceNameElem ? workspaceNameElem.innerText.trim() : '';
+          const now = new Date();
+          const asOfDate = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' });
           const ws_data = [
-            ["Timestamp", "Crop"],
-            ...lastFilteredData.map(entry => [entry.timestamp, entry.crop])
+            ["Crop Recommendation History", ""],
+            ["Location: " + workplaceName],
+            [ "As of " + asOfDate],
+            [],
+            ["Date", "Recommended Crop"],
+            ...lastFilteredData.map(entry => [formatReadableDate(entry.timestamp), entry.crop])
           ];
           const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+          // Merge title, workplace, and as of cells across both columns
+          ws['!merges'] = [
+            { s: { r:0, c:0 }, e: { r:0, c:1 } }, // Title
+            { s: { r:1, c:0 }, e: { r:1, c:1 } }, // Workplace
+            { s: { r:2, c:0 }, e: { r:2, c:1 } }  // As of
+          ];
+
+          // Set column widths for a professional look
+          ws['!cols'] = [ { wch: 20 }, { wch: 20 } ];
+
+          // Note: Styling (bold, italic) is not supported in the open-source SheetJS in-browser version.
+          // The rest of the formatting (merges, column widths) will still apply.
+
           const wb = XLSX.utils.book_new();
           XLSX.utils.book_append_sheet(wb, ws, "CropHistory");
           XLSX.writeFile(wb, "crop_recommendation_history.xlsx");

@@ -371,13 +371,13 @@ def reports(request):
         {"timestamp": "2024-05-22 10:00", "crop": "Corn"},
         {"timestamp": "2024-05-27 10:00", "crop": "Rice"},
         {"timestamp": "2024-05-27 12:00", "crop": "Wheat"},
-        {"timestamp": "2024-05-27 12:00", "crop": "Soybean"},
-        {"timestamp": "2024-05-27 14:00", "crop": "Munggo"},
-        {"timestamp": "2024-04-28 15:00", "crop": "Mais"},
+        {"timestamp": "2024-05-26 12:00", "crop": "Soybean"},
+        {"timestamp": "2024-05-26 14:00", "crop": "Munggo"},
+        {"timestamp": "2024-04-27 15:00", "crop": "Mais"},
         {"timestamp": "2025-04-28 16:00", "crop": "Banana"},
-        {"timestamp": "2025-05-29 17:00", "crop": "Apple"},
-        {"timestamp": "2025-05-29 17:00", "crop": "Apple"},
-        {"timestamp": "2025-05-29 19:00", "crop": "Grapes"},
+        {"timestamp": "2025-05-28 17:00", "crop": "Apple"},
+        {"timestamp": "2025-05-28 17:00", "crop": "Apple"},
+        {"timestamp": "2025-05-28 19:00", "crop": "Grapes"},
     ]
 
     context = {
@@ -496,13 +496,13 @@ def dashboard(request):
         {"timestamp": "2024-05-22 10:00", "crop": "Corn"},
         {"timestamp": "2024-05-27 10:00", "crop": "Rice"},
         {"timestamp": "2024-05-27 12:00", "crop": "Wheat"},
-        {"timestamp": "2024-05-27 12:00", "crop": "Soybean"},
-        {"timestamp": "2024-05-27 14:00", "crop": "Munggo"},
-        {"timestamp": "2024-05-28 15:00", "crop": "Mais"},
-        {"timestamp": "2024-05-28 16:00", "crop": "Banana"},
-        {"timestamp": "2024-05-29 17:00", "crop": "Apple"},
-        {"timestamp": "2024-05-29 17:00", "crop": "Apple"},
-        {"timestamp": "2024-05-29 19:00", "crop": "Grapes"},
+        {"timestamp": "2024-05-26 12:00", "crop": "Soybean"},
+        {"timestamp": "2024-05-26 14:00", "crop": "Munggo"},
+        {"timestamp": "2024-04-27 15:00", "crop": "Mais"},
+        {"timestamp": "2025-04-28 16:00", "crop": "Banana"},
+        {"timestamp": "2025-05-28 17:00", "crop": "Apple"},
+        {"timestamp": "2025-05-28 17:00", "crop": "Apple"},
+        {"timestamp": "2025-05-28 19:00", "crop": "Grapes"},
     ]
 
     context = {
