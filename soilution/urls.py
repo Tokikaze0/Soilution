@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('super_duper_admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path('auth/', include('social_django.urls', namespace='social')),
     # path('messages/', include('messaging.urls')),
