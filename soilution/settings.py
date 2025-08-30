@@ -96,7 +96,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'soilution.wsgi.application'
-
+DJANGO_SETTINGS_MODULE = 'soilution.settings'
 ASGI_APPLICATION = 'soilution.asgi.application'
 
 
