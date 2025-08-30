@@ -29,7 +29,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
             existing_user = User.objects.get(email=user.email)
             sociallogin.connect(request, existing_user)
 
-        print("🔐 User is inactive, redirecting to pending_approval")
+        # User is inactive, redirecting to pending_approval
 
     def authentication_success_url(self, request):
         # Only reached if user is active

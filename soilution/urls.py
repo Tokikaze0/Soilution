@@ -70,6 +70,11 @@ urlpatterns = [
     # path('users/<int:user_id>/deactivate/', views.deactivate_user, name='deactivate_user'),
     # path('users/<int:user_id>/activate/', views.activate_user, name='activate_user'),
     path('api/esp32-data/', views.esp32_data_api, name='esp32_data_api'),
+    
+    # New API endpoints for soil analysis and crop recommendations
+    path('api/analyze-soil/', views.analyze_soil, name='analyze_soil'),
+    path('api/crop-history/', views.get_crop_history, name='get_crop_history'),
+    path('api/workspace-stats/', views.get_workspace_stats, name='get_workspace_stats'),
 ]
 
 if settings.DEBUG:

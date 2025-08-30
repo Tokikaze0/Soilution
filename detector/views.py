@@ -44,21 +44,19 @@ import os
 import joblib
 from django.utils.dateformat import DateFormat
 from django.utils.formats import get_format
+from .services import CropRecommendationService, SoilAnalysisService
 
 
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
 
 channel_layer = get_channel_layer()
 
-APP_DIR = os.path.dirname(__file__)
-MODEL_PATH = os.path.join(APP_DIR, 'ml_models', 'crop_recommendation_model_v3.keras')
-SCALER_PATH = os.path.join(APP_DIR, 'ml_models', 'scaler.pkl')
-crop_model = keras.models.load_model(MODEL_PATH)
-scaler = joblib.load(SCALER_PATH)
+# Initialize services
+crop_service = CropRecommendationService()
+soil_service = SoilAnalysisService()
 
-crop_labels = ['apple', 'banana', 'blackgram', 'chickpea', 'coconut', 'coffee', 'cotton', 'grapes', 
-               'jute', 'kidneybeans', 'lentil', 'maize', 'mango', 'mothbeans', 'mungbean', 'muskmelon', 
-               'orange', 'papaya', 'pigeonpeas', 'pomegranate', 'rice', 'watermelon', 'wheat']  # Example list
+def is_admin(user):
+    return user.is_authenticated and user.profile.role == 'admin'
 
 def index(request):
     list(messages.get_messages(request))
@@ -367,25 +365,22 @@ def reports(request):
         if selected_workspace:
             request.session['selected_workspace_id'] = selected_workspace.id
             
-    crop_history = [
-        {"timestamp": "2024-05-22 10:00", "crop": "Corn"},
-        {"timestamp": "2024-05-27 10:00", "crop": "Rice"},
-        {"timestamp": "2024-05-27 12:00", "crop": "Wheat"},
-        {"timestamp": "2024-05-27 12:00", "crop": "Soybean"},
-        {"timestamp": "2024-05-27 14:00", "crop": "Munggo"},
-        {"timestamp": "2024-04-28 15:00", "crop": "Mais"},
-        {"timestamp": "2025-04-28 16:00", "crop": "Banana"},
-        {"timestamp": "2025-05-29 17:00", "crop": "Apple"},
-        {"timestamp": "2025-05-29 17:00", "crop": "Apple"},
-        {"timestamp": "2025-05-29 19:00", "crop": "Grapes"},
-    ]
+    # Get real crop history from database
+    crop_history = crop_service.get_user_crop_history(user, selected_workspace, limit=10)
+    crop_history_data = []
+    
+    for history in crop_history:
+        crop_history_data.append({
+            "timestamp": history.recommendation_date.strftime("%Y-%m-%d %H:%M"),
+            "crop": history.crop_name
+        })
 
     context = {
         'profile_picture_url': profile_picture_url,
         'workspace': user_workspaces,
         'selected_workspace': selected_workspace,
         'user': user,
-        'crop_history_json': json.dumps(crop_history),
+        'crop_history_json': json.dumps(crop_history_data),
     }
 
     return render(request, 'reports.html', context)
@@ -492,17 +487,26 @@ def dashboard(request):
         selected_workspace = user_workspaces.first()
         request.session['selected_workspace_id'] = selected_workspace.id
         
-    crop_history = [
-        {"timestamp": "2024-05-22 10:00", "crop": "Corn"},
-        {"timestamp": "2024-05-27 10:00", "crop": "Rice"},
-        {"timestamp": "2024-05-27 12:00", "crop": "Wheat"},
-        {"timestamp": "2024-05-27 12:00", "crop": "Soybean"},
-        {"timestamp": "2024-05-27 14:00", "crop": "Munggo"},
-        {"timestamp": "2024-05-28 15:00", "crop": "Mais"},
-        {"timestamp": "2024-05-28 16:00", "crop": "Banana"},
-        {"timestamp": "2024-05-29 17:00", "crop": "Apple"},
-        {"timestamp": "2024-05-29 17:00", "crop": "Apple"},
-        {"timestamp": "2024-05-29 19:00", "crop": "Grapes"},
+    # Get real crop history from database
+    crop_history = crop_service.get_user_crop_history(user, selected_workspace, limit=10)
+    crop_history_data = []
+    
+    for history in crop_history:
+        crop_history_data.append({
+            "timestamp": history.recommendation_date.strftime("%Y-%m-%d %H:%M"),
+            "crop": history.crop_name
+        })
+    
+    # Get crop distribution for bar chart
+    crop_distribution = {}
+    for history in crop_history:
+        crop_name = history.crop_name
+        crop_distribution[crop_name] = crop_distribution.get(crop_name, 0) + 1
+    
+    # Convert to list format for chart
+    crop_chart_data = [
+        {"crop": crop, "count": count} 
+        for crop, count in crop_distribution.items()
     ]
 
     context = {
@@ -510,7 +514,8 @@ def dashboard(request):
         'workspace': user_workspaces,
         'profile_picture_url': profile_picture_url,
         'selected_workspace': selected_workspace,
-        'crop_history_json': json.dumps(crop_history),
+        'crop_history_json': json.dumps(crop_history_data),
+        'crop_chart_data': json.dumps(crop_chart_data),
     }
 
     return render(request, 'dashboard.html', context)
@@ -577,9 +582,9 @@ def ResetPassword(request, reset_id):
                 passwords_have_error = True
                 messages.error(request, 'Passwords do not match')
 
-            if len(password) < 5:
+            if len(password) < 8:
                 passwords_have_error = True
-                messages.error(request, 'Password must be at least 5 characters long')
+                messages.error(request, 'Password must be at least 8 characters long')
 
             expiration_time = password_reset_id.created_when + timezone.timedelta(minutes=10)
 
@@ -652,7 +657,7 @@ def add_workspace(request):
 
         else:
             # Log form errors if any
-            print("Form errors:", form.errors)  # For debugging purposes
+            # Form validation failed
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'error': form.errors})
             else:
@@ -806,6 +811,8 @@ def set_workspace(request, workspace_id):
     return redirect('dashboard_s')
 
 # ADMIN
+@login_required
+@user_passes_test(is_admin)
 def admin_register(request):
     list(messages.get_messages(request))
     if request.method == "POST":
@@ -825,9 +832,9 @@ def admin_register(request):
             user_data_has_error = True
             messages.error(request, "This email is already in use. Please use a different email address.")
 
-        if len(password) < 5:
+        if len(password) < 8:
             user_data_has_error = True
-            messages.error(request, "Password must be at least 5 characters")
+            messages.error(request, "Password must be at least 8 characters")
 
         if user_data_has_error:
             return redirect('register')
@@ -1095,9 +1102,6 @@ def admin_dashboard_settings(request):
 
     return render(request, 'admin/admin_dashboard_settings.html', context)
 
-def is_admin(user):
-    return user.is_authenticated and user.profile.role == 'admin'
-
 @user_passes_test(is_admin)
 def pending_users(request):
     if request.user.is_authenticated:
@@ -1110,11 +1114,15 @@ def pending_users(request):
         })
     return JsonResponse({'count': 0, 'users': []}, status=401)
 
+@login_required
+@user_passes_test(is_admin)
 def pending_accounts(request):
     pending_users = User.objects.filter(is_active=False)
     # return JsonResponse({'users': list(pending_users)})
     return render(request, 'admin/pending_accounts.html', {'users': pending_users})
 
+@login_required
+@user_passes_test(is_admin)
 def get_pending_accounts(request):
     if request.method == "GET":
         # Fetch users with is_active=False (pending accounts)
@@ -1237,8 +1245,14 @@ def user_list(request):
 
 
 #MESSAGES/INBOX
+@login_required
 def view_message(request, message_id):
     message = get_object_or_404(Message, id=message_id)
+    
+    # Ensure user can only view messages they sent or received
+    if message.sender != request.user and message.receiver != request.user:
+        messages.error(request, "You don't have permission to view this message.")
+        return redirect('workspace')
 
     # Only mark as read if it's the recipient's message and it's unread
     if message.receiver == request.user and not message.is_read:
@@ -1247,6 +1261,7 @@ def view_message(request, message_id):
 
     return render(request, 'messages/message_details.html', {'message': message})
 
+@login_required
 def get_unread_count_and_messages(request):
     unread_count = Message.objects.filter(receiver=request.user, is_read=False).count()
 
@@ -1290,7 +1305,7 @@ def get_unread_count_and_messages(request):
         'messages': messages_data
     })
 
-# @login_required
+@login_required
 def get_unread_conversations(request):
     user = request.user
 
@@ -1328,7 +1343,7 @@ def get_unread_conversations(request):
 
     return JsonResponse({'conversations': conversations})
 
-# @login_required
+@login_required
 def message_thread(request, user_id):
     user = request.user
     other = get_object_or_404(User, id=user_id)
@@ -1439,6 +1454,7 @@ def load_conversation(request, sender_id):
 
     return JsonResponse({'messages': message_data})
 
+@login_required
 def mark_messages_as_read(request, sender_id):
     Message.objects.filter(receiver=request.user, sender_id=sender_id, is_read=False).update(is_read=True)
     return JsonResponse({'status': 'ok'})
@@ -1458,17 +1474,226 @@ def get_admin_users(request):
     
     return JsonResponse({'admins': admin_data})
 
-@csrf_exempt
+@login_required
+def analyze_soil(request):
+    """
+    API endpoint to analyze soil data and provide crop recommendations.
+    Expects a POST request with JSON body containing soil parameters.
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            
+            # Extract soil parameters
+            nitrogen = data.get('nitrogen')
+            phosphorus = data.get('phosphorus')
+            potassium = data.get('potassium')
+            temperature = data.get('temperature')
+            moisture = data.get('moisture')
+            ph = data.get('ph')
+            conductivity = data.get('conductivity')
+            
+            # Validate required parameters
+            if not all([nitrogen, phosphorus, potassium, temperature, moisture, ph, conductivity]):
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'All soil parameters are required'
+                }, status=400)
+            
+            # Get crop recommendations using the service
+            recommendations = crop_service.get_crop_recommendations(
+                nitrogen=nitrogen,
+                phosphorus=phosphorus,
+                potassium=potassium,
+                temperature=temperature,
+                moisture=moisture,
+                ph=ph,
+                conductivity=conductivity
+            )
+            
+            # Get soil analysis using the service
+            soil_analysis = soil_service.analyze_soil(
+                nitrogen=nitrogen,
+                phosphorus=phosphorus,
+                potassium=potassium,
+                temperature=temperature,
+                moisture=moisture,
+                ph=ph,
+                conductivity=conductivity
+            )
+            
+            return JsonResponse({
+                'status': 'success',
+                'soil_analysis': soil_analysis,
+                'crop_recommendations': recommendations
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid JSON data'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=500)
+    
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Only POST requests are allowed'
+    }, status=405)
+
+@login_required
+def get_crop_history(request):
+    """
+    API endpoint to get crop recommendation history for the authenticated user.
+    """
+    try:
+        user = request.user
+        workspace_id = request.GET.get('workspace_id')
+        
+        # Get workspace if specified, otherwise use default
+        workspace = None
+        if workspace_id:
+            try:
+                workspace = Workspace.objects.get(id=workspace_id, user=user)
+            except Workspace.DoesNotExist:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Workspace not found'
+                }, status=404)
+        
+        # Get crop history using the service
+        crop_history = crop_service.get_user_crop_history(user, workspace, limit=50)
+        
+        # Format the data
+        history_data = []
+        for history in crop_history:
+            history_data.append({
+                'id': history.id,
+                'crop_name': history.crop_name,
+                'confidence': history.confidence,
+                'recommendation_date': history.recommendation_date.strftime('%Y-%m-%d %H:%M:%S'),
+                'soil_parameters': {
+                    'nitrogen': history.nitrogen,
+                    'phosphorus': history.phosphorus,
+                    'potassium': history.potassium,
+                    'temperature': history.temperature,
+                    'moisture': history.moisture,
+                    'ph': history.ph,
+                    'conductivity': history.conductivity
+                }
+            })
+        
+        return JsonResponse({
+            'status': 'success',
+            'crop_history': history_data,
+            'total_count': len(history_data)
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
+@login_required
+def get_workspace_stats(request):
+    """
+    API endpoint to get statistics for a specific workspace.
+    """
+    try:
+        user = request.user
+        workspace_id = request.GET.get('workspace_id')
+        
+        if not workspace_id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'workspace_id parameter is required'
+            }, status=400)
+        
+        # Get workspace
+        try:
+            workspace = Workspace.objects.get(id=workspace_id, user=user)
+        except Workspace.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Workspace not found'
+            }, status=404)
+        
+        # Get statistics using the services
+        crop_history = crop_service.get_user_crop_history(user, workspace, limit=100)
+        soil_analyses = soil_service.get_user_soil_analyses(user, workspace, limit=100)
+        
+        # Calculate statistics
+        total_analyses = len(crop_history)
+        unique_crops = len(set([h.crop_name for h in crop_history]))
+        
+        # Most recommended crop
+        crop_counts = {}
+        for history in crop_history:
+            crop_counts[history.crop_name] = crop_counts.get(history.crop_name, 0) + 1
+        
+        most_recommended = max(crop_counts.items(), key=lambda x: x[1]) if crop_counts else None
+        
+        # Average confidence
+        avg_confidence = sum([h.confidence for h in crop_history]) / len(crop_history) if crop_history else 0
+        
+        # Recent activity (last 7 days)
+        from datetime import datetime, timedelta
+        week_ago = datetime.now() - timedelta(days=7)
+        recent_analyses = len([h for h in crop_history if h.recommendation_date > week_ago])
+        
+        stats = {
+            'total_analyses': total_analyses,
+            'unique_crops': unique_crops,
+            'most_recommended_crop': {
+                'crop_name': most_recommended[0],
+                'count': most_recommended[1]
+            } if most_recommended else None,
+            'average_confidence': round(avg_confidence, 2),
+            'recent_analyses_7_days': recent_analyses,
+            'workspace_name': workspace.name,
+            'workspace_description': workspace.description
+        }
+        
+        return JsonResponse({
+            'status': 'success',
+            'workspace_stats': stats
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
 def esp32_data_api(request):
     """
     API endpoint to receive JSON data from ESP32.
     Expects a POST request with JSON body containing:
     moisture, temperature, conductivity, pH, nitrogen, phosphorus, potassium
-    Returns the received data and the top 5 crop recommendations.
+    Returns the received data and crop recommendations, and saves to database.
     """
     if request.method == 'POST':
         try:
+            # Validate content type
+            if request.content_type != 'application/json':
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Content-Type must be application/json'
+                }, status=400)
+            
+            # Limit request size to prevent DoS
+            if len(request.body) > 1024:  # 1KB limit
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Request too large'
+                }, status=413)
+            
             data = json.loads(request.body.decode('utf-8'))
+            
             # Extract fields from the JSON payload
             moisture = data.get('moisture')
             temperature = data.get('temperature')
@@ -1478,25 +1703,80 @@ def esp32_data_api(request):
             phosphorus = data.get('phosphorus')
             potassium = data.get('potassium')
 
-            # Prepare input for the model (adjust order as per your model's training)
-            # Example: [N, P, K, temperature, moisture, pH, conductivity]
-            input_data = np.array([[nitrogen, phosphorus, potassium, temperature, moisture, pH, conductivity]], dtype=np.float32)
+            # Validate required parameters
+            if not all([moisture, temperature, conductivity, pH, nitrogen, phosphorus, potassium]):
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'All soil parameters are required'
+                }, status=400)
+            
+            # Validate data types and ranges
+            try:
+                moisture = float(moisture)
+                temperature = float(temperature)
+                conductivity = float(conductivity)
+                pH = float(pH)
+                nitrogen = float(nitrogen)
+                phosphorus = float(phosphorus)
+                potassium = float(potassium)
+            except (ValueError, TypeError):
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'All parameters must be numeric values'
+                }, status=400)
+            
+            # Validate reasonable ranges
+            if not (0 <= moisture <= 100):
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Moisture must be between 0 and 100'
+                }, status=400)
+            
+            if not (-50 <= temperature <= 100):
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Temperature must be between -50 and 100'
+                }, status=400)
+            
+            if not (0 <= pH <= 14):
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'pH must be between 0 and 14'
+                }, status=400)
 
-            # Scale the input if your model expects scaled input
-            input_data_scaled = scaler.transform(input_data)
+            # Convert ESP32 data to service format (note: services expect 'humidity' and 'rainfall')
+            # For now, we'll map moisture to humidity and set rainfall to 0
+            soil_params = {
+                'nitrogen': float(nitrogen),
+                'phosphorus': float(phosphorus),
+                'potassium': float(potassium),
+                'temperature': float(temperature),
+                'humidity': float(moisture),  # Map moisture to humidity
+                'ph': float(pH),
+                'rainfall': 0.0  # ESP32 doesn't provide rainfall, set to 0
+            }
 
-            # Get prediction probabilities from the model
-            prediction = crop_model.predict(input_data_scaled)
+            # Get crop recommendations using the service
+            recommendations = crop_service.get_crop_recommendations(
+                nitrogen=soil_params['nitrogen'],
+                phosphorus=soil_params['phosphorus'],
+                potassium=soil_params['potassium'],
+                temperature=soil_params['temperature'],
+                moisture=soil_params['humidity'],  # Use humidity as moisture
+                ph=soil_params['ph'],
+                conductivity=conductivity
+            )
 
-            # Get top 5 predictions
-            top_5_indices = prediction[0].argsort()[-5:][::-1]
-            top_5_crops = [
-                {
-                    "crop_name": crop_labels[i] if i < len(crop_labels) else str(i),
-                    "probability": float(prediction[0][i])
-                }
-                for i in top_5_indices
-            ]
+            # Get soil analysis using the service
+            soil_analysis = soil_service.analyze_soil(
+                nitrogen=soil_params['nitrogen'],
+                phosphorus=soil_params['phosphorus'],
+                potassium=soil_params['potassium'],
+                temperature=soil_params['temperature'],
+                moisture=soil_params['humidity'],
+                ph=soil_params['ph'],
+                conductivity=conductivity
+            )
 
             # Respond with success, echo the received data, and add recommendations
             return JsonResponse({
@@ -1510,10 +1790,21 @@ def esp32_data_api(request):
                     'phosphorus': phosphorus,
                     'potassium': potassium,
                 },
-                'recommendations': top_5_crops
+                'soil_analysis': soil_analysis,
+                'crop_recommendations': recommendations
             }, status=201)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid JSON format'
+            }, status=400)
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+            # Log the error but don't expose internal details
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Internal server error'
+            }, status=500)
     else:
         return JsonResponse({'status': 'error', 'message': 'Only POST requests are allowed.'}, status=405)
     

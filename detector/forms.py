@@ -136,8 +136,8 @@ class RegisterForm(forms.ModelForm):
     
     def clean_password(self):
         password = self.cleaned_data.get('password') 
-        if len(password) < 5:
-            raise forms.ValidationError("Password must be at least 5 characters long.")
+        if len(password) < 8:
+            raise forms.ValidationError("Password must be at least 8 characters long.")
 
         # Add more custom rules if needed:
         # if not any(char.isdigit() for char in password):
@@ -175,8 +175,8 @@ class CreateUserForm(forms.ModelForm):
     
     def clean_password(self):
         password = self.cleaned_data.get('password')
-        if password and len(password) < 5:
-            raise ValidationError("Password must be at least 5 characters long.")
+        if password and len(password) < 8:
+            raise ValidationError("Password must be at least 8 characters long.")
         return password
 
     def clean(self):
