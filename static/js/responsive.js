@@ -132,6 +132,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 chart.chart.resize();
             }
         });
+        
+        // Special handling for Chart.js charts
+        const chartJsCharts = document.querySelectorAll('canvas[id*="Chart"]');
+        chartJsCharts.forEach(canvas => {
+            if (canvas.chart) {
+                canvas.chart.resize();
+            }
+        });
     }
     
     // Resize charts on window resize
@@ -141,12 +149,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // MOBILE-SPECIFIC FEATURES
     // ========================================
     
-    // Detect mobile device
+    // Detect mobile device and screen size
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isVerySmallScreen = window.innerWidth <= 320;
+    const isSmallScreen = window.innerWidth <= 576;
     
     if (isMobile) {
         // Add mobile-specific classes
         document.body.classList.add('mobile-device');
+        
+        if (isVerySmallScreen) {
+            document.body.classList.add('very-small-screen');
+        }
+        
+        if (isSmallScreen) {
+            document.body.classList.add('small-screen');
+        }
         
         // Prevent zoom on input focus (iOS)
         const inputs = document.querySelectorAll('input, select, textarea');
@@ -183,6 +201,129 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
+        
+        // Optimize for very small screens (320px)
+        if (isVerySmallScreen) {
+            optimizeForVerySmallScreen();
+        }
+    }
+    
+    // ========================================
+    // VERY SMALL SCREEN OPTIMIZATIONS (320px)
+    // ========================================
+    
+    function optimizeForVerySmallScreen() {
+        // Reduce font sizes for better fit
+        const textElements = document.querySelectorAll('h1, h2, h3, p, span, div');
+        textElements.forEach(element => {
+            if (element.style.fontSize) {
+                const currentSize = parseFloat(element.style.fontSize);
+                if (currentSize > 12) {
+                    element.style.fontSize = (currentSize * 0.8) + 'px';
+                }
+            }
+        });
+        
+        // Optimize chart display
+        const charts = document.querySelectorAll('canvas[id*="Chart"]');
+        charts.forEach(canvas => {
+            if (canvas.chart && canvas.chart.options) {
+                // Reduce chart padding and margins
+                canvas.chart.options.layout.padding = {
+                    top: 10,
+                    right: 10,
+                    bottom: 10,
+                    left: 10
+                };
+                
+                // Adjust legend position for small screens
+                if (canvas.chart.options.plugins && canvas.chart.options.plugins.legend) {
+                    canvas.chart.options.plugins.legend.position = 'bottom';
+                    canvas.chart.options.plugins.legend.labels.fontSize = 10;
+                }
+                
+                canvas.chart.update();
+            }
+        });
+        
+        // Optimize sidebar behavior
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+            // Make sidebar more compact
+            sidebar.style.width = '3.5rem';
+            sidebar.addEventListener('mouseenter', function() {
+                this.style.width = '8rem';
+            });
+            sidebar.addEventListener('mouseleave', function() {
+                this.style.width = '3.5rem';
+            });
+        }
+        
+        // Optimize inbox sidebar
+        const inboxSidebar = document.getElementById('inbox-sidebar');
+        if (inboxSidebar) {
+            inboxSidebar.style.width = '100%';
+            inboxSidebar.style.right = '0';
+        }
+        
+        // Optimize dropdowns
+        const dropdowns = document.querySelectorAll('#profile-dropdown, #notification-dropdown');
+        dropdowns.forEach(dropdown => {
+            dropdown.style.right = '0';
+            if (dropdown.id === 'profile-dropdown') {
+                dropdown.style.width = '12rem';
+            } else if (dropdown.id === 'notification-dropdown') {
+                dropdown.style.width = '15rem';
+            }
+        });
+        
+        // Optimize main content padding
+        const mainContent = document.querySelector('.flex-1.p-6.mt-16.ml-14');
+        if (mainContent) {
+            mainContent.style.padding = '0.75rem';
+            mainContent.style.marginLeft = '3.5rem';
+        }
+        
+        // Optimize stats grid
+        const statsGrid = document.querySelector('.grid.grid-cols-2.md\\:grid-cols-4.lg\\:grid-cols-7');
+        if (statsGrid) {
+            statsGrid.style.gap = '0.5rem';
+        }
+        
+        // Optimize stats cards
+        const statsCards = document.querySelectorAll('.bg-white.p-4.rounded.shadow.border');
+        statsCards.forEach(card => {
+            card.style.padding = '0.75rem';
+            card.style.marginBottom = '0.5rem';
+            
+            const title = card.querySelector('.text-lg');
+            const value = card.querySelector('.text-2xl');
+            const icon = card.querySelector('img');
+            
+            if (title) title.style.fontSize = '0.9rem';
+            if (value) value.style.fontSize = '1.5rem';
+            if (icon) {
+                icon.style.width = '2.5rem';
+                icon.style.height = '2.5rem';
+            }
+        });
+        
+        // Optimize chart container
+        const chartContainer = document.querySelector('.card.mt-12.bg-white.border.border-gray-300.rounded-lg.shadow-lg.p-4');
+        if (chartContainer) {
+            chartContainer.style.marginTop = '1rem';
+            chartContainer.style.padding = '0.75rem';
+            
+            const chartTitle = chartContainer.querySelector('h3');
+            if (chartTitle) chartTitle.style.fontSize = '1rem';
+        }
+        
+        // Optimize chart canvas
+        const chartCanvas = document.getElementById('cropHistoryChart');
+        if (chartCanvas) {
+            chartCanvas.style.width = '100%';
+            chartCanvas.style.height = '250px';
+        }
     }
     
     // ========================================
@@ -218,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 func(...args);
             };
             clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
+            setTimeout(later, wait);
         };
     }
     
@@ -246,15 +387,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const body = document.body;
         
         // Remove existing responsive classes
-        body.classList.remove('mobile', 'tablet', 'desktop');
+        body.classList.remove('mobile', 'tablet', 'desktop', 'very-small-screen', 'small-screen');
         
         // Add appropriate class
-        if (width < 768) {
+        if (width <= 320) {
+            body.classList.add('mobile', 'very-small-screen');
+        } else if (width <= 576) {
+            body.classList.add('mobile', 'small-screen');
+        } else if (width < 768) {
             body.classList.add('mobile');
         } else if (width < 992) {
             body.classList.add('tablet');
         } else {
             body.classList.add('desktop');
+        }
+        
+        // Re-optimize if screen size changes to very small
+        if (width <= 320 && !body.classList.contains('very-small-optimized')) {
+            body.classList.add('very-small-optimized');
+            optimizeForVerySmallScreen();
         }
     }
     
@@ -334,5 +485,12 @@ window.ResponsiveUtils = {
                 chart.chart.resize();
             }
         });
+    },
+    
+    optimizeForVerySmallScreen: function() {
+        // Make this function available globally
+        if (typeof optimizeForVerySmallScreen === 'function') {
+            optimizeForVerySmallScreen();
+        }
     }
 };
